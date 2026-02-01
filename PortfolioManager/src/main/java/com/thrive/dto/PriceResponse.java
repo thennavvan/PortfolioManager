@@ -2,10 +2,10 @@ package com.thrive.dto;
 
 public class PriceResponse {
     private String symbol;
-    private double price;
+    private Double price;
     private String currency;
 
-    public PriceResponse(String symbol, double price, String currency) {
+    public PriceResponse(String symbol, Double price, String currency) {
         this.symbol = symbol;
         this.price = price;
         this.currency = currency;
@@ -15,7 +15,7 @@ public class PriceResponse {
         return symbol;
     }
 
-    public double getPrice() {
+    public Double getPrice() {
         return price;
     }
 

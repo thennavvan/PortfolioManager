@@ -38,11 +38,11 @@ public class AssetService {
 
         int totalAssets = assets.size();
 
-        double totalQuantity = assets.stream()
+        Double totalQuantity = assets.stream()
                 .mapToDouble(Asset::getQuantity)
                 .sum();
 
-        double totalInvestedValue = assets.stream()
+        Double totalInvestedValue = assets.stream()
                 .mapToDouble(asset -> asset.getQuantity() * asset.getBuyPrice())
                 .sum();
 

@@ -2,10 +2,10 @@ package com.thrive.dto;
 
 public class PortfolioSummary {
     private int totalAssets;
-    private double totalQuantity;
-    private double totalInvestedValue;
+    private Double totalQuantity;
+    private Double totalInvestedValue;
 
-    public PortfolioSummary(int totalAssets, double totalQuantity, double totalInvestedValue) {
+    public PortfolioSummary(int totalAssets, Double totalQuantity, Double totalInvestedValue) {
         this.totalAssets = totalAssets;
         this.totalQuantity = totalQuantity;
         this.totalInvestedValue = totalInvestedValue;
@@ -15,11 +15,11 @@ public class PortfolioSummary {
         return totalAssets;
     }
 
-    public double getTotalQuantity() {
+    public Double getTotalQuantity() {
         return totalQuantity;
     }
 
-    public double getTotalInvestedValue() {
+    public Double getTotalInvestedValue() {
         return totalInvestedValue;
     }
 }
