@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import com.thrive.dto.PortfolioSummary;
 import com.thrive.dto.PriceResponse;
 import com.thrive.service.MarketPriceService;
-
-
 import java.util.List;
+
+
 
 @RestController
 @RequestMapping("/api/assets")
@@ -56,7 +56,7 @@ public class AssetController {
     }
 
     @GetMapping("/price/{symbol}")
-    public ResponseEntity<PriceResponse> getLivePrice(@PathVariable String symbol) {
-        return ResponseEntity.ok(marketPriceService.getLivePrice(symbol));
+    public PriceResponse getLivePrice(@PathVariable String symbol) {
+        return marketPriceService.getLivePrice(symbol);
     }
 }
