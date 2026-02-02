@@ -5,9 +5,11 @@ import com.thrive.dto.PortfolioSummaryResponse;
 import com.thrive.entity.Asset;
 import com.thrive.repo.AssetRepo;
 import org.springframework.stereotype.Service;
+import com.thrive.dto.PortfolioAllocationItem;
+import com.thrive.dto.PortfolioAllocationResponse;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class PortfolioService {
@@ -42,5 +44,40 @@ public class PortfolioService {
         }
 
         return new PortfolioSummaryResponse(summaries, totalValue);
+    }
+
+    public PortfolioAllocationResponse getAllocation() {
+
+        List<Asset> assets = assetRepo.findAll();
+
+        Map<String, Double> valueByType = new HashMap<>();
+        double totalValue = 0.0;
+
+        for (Asset asset : assets) {
+            double currentPrice = marketPriceService.getLivePrice(asset.getSymbol()).getPrice();
+            double marketValue = currentPrice * asset.getQuantity();
+
+            valueByType.merge(asset.getAssetType().name(), marketValue, Double::sum);
+            totalValue += marketValue;
+        }
+
+        List<PortfolioAllocationItem> allocation = new ArrayList<>();
+
+        for (Map.Entry<String, Double> entry : valueByType.entrySet()) {
+            double percentage = (entry.getValue() / totalValue) * 100;
+            allocation.add(
+                    new PortfolioAllocationItem(
+                            entry.getKey(),
+                            round(entry.getValue()),
+                            round(percentage)
+                    )
+            );
+        }
+
+        return new PortfolioAllocationResponse(round(totalValue), allocation);
+    }
+
+    private double round(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 }
