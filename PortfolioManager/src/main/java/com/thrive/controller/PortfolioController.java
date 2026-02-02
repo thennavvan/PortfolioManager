@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.thrive.dto.PortfolioAllocationResponse;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/portfolio")
@@ -27,6 +28,14 @@ public class PortfolioController {
 
     @GetMapping("/allocation")
     public PortfolioAllocationResponse getAllocation() {
+
         return portfolioService.getAllocation();
     }
+
+    @PostMapping("/import")
+    public String importPortfolio(@RequestParam("file") MultipartFile file) {
+        portfolioService.importFromCsv(file);
+        return "Portfolio imported successfully";
+    }
+
 }
