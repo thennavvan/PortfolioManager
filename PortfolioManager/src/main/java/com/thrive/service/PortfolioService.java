@@ -8,11 +8,7 @@ import org.springframework.stereotype.Service;
 import com.thrive.dto.PortfolioAllocationItem;
 import com.thrive.dto.PortfolioAllocationResponse;
 
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
+import java.util.ArrayList;
 import java.util.*;
 
 @Service
@@ -82,40 +78,6 @@ public class PortfolioService {
     }
 
     private double round(double value) {
-
         return Math.round(value * 100.0) / 100.0;
     }
-
-    public void importFromCsv(MultipartFile file) {
-
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(file.getInputStream()))) {
-
-            String line;
-            boolean firstLine = true;
-
-            while ((line = reader.readLine()) != null) {
-
-                // skip header
-                if (firstLine) {
-                    firstLine = false;
-                    continue;
-                }
-
-                String[] values = line.split(",");
-
-                Asset asset = new Asset();
-                asset.setSymbol(values[0].trim());
-                asset.setQuantity(Double.parseDouble(values[1].trim()));
-                asset.setBuyPrice(Double.parseDouble(values[2].trim()));
-                asset.setAssetType(Asset.AssetType.valueOf(values[3].trim()));
-
-                assetRepo.save(asset);
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to import CSV file");
-        }
-    }
-
 }
