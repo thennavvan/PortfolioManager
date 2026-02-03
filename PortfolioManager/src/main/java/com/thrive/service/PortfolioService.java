@@ -28,7 +28,7 @@ public class PortfolioService {
         Double totalValue = 0.0;
 
         for (Asset asset : assets) {
-            Double price = MarketPriceService.getLivePrice(asset.getSymbol()).getPrice();
+            Double price = marketPriceService.getLivePrice(asset.getSymbol()).getPrice();
             PortfolioAssetSummary summary =
                     new PortfolioAssetSummary(
                             asset.getSymbol(),
@@ -85,7 +85,7 @@ public class PortfolioService {
 
         for (Asset asset : assets) {
 
-            double currentPrice = MarketPriceService
+            double currentPrice = marketPriceService
                     .getLivePrice(asset.getSymbol())
                     .getPrice();
 

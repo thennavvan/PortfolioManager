@@ -32,6 +32,19 @@ public class AssetService {
         assetRepo.deleteById(id);
     }
 
+    public Optional<Asset> updateAsset(Long id, Asset updatedAsset) {
+
+        return assetRepo.findById(id)
+                .map(existing -> {
+                    existing.setName(updatedAsset.getName());
+                    existing.setSymbol(updatedAsset.getSymbol());
+                    existing.setAssetType(updatedAsset.getAssetType());
+                    existing.setQuantity(updatedAsset.getQuantity());
+                    existing.setBuyPrice(updatedAsset.getBuyPrice());
+                    return assetRepo.save(existing);
+                });
+    }
+
     public PortfolioSummary getPortfolioSummary() {
 
         var assets = assetRepo.findAll();
