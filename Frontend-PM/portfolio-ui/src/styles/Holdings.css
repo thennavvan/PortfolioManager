@@ -1,0 +1,11 @@
+/* Holdings Page Styles */
+.holdings-page {
+  width: 100%;
+}
+
+.holdings-page h1 {
+  font-size: 2.2rem;
+  color: #2d3748;
+  margin-bottom: 2rem;
+  font-weight: 700;
+}

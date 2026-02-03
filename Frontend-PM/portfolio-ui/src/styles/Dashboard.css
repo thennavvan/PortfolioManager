@@ -1,0 +1,11 @@
+/* Dashboard Page Styles */
+.dashboard-page {
+  width: 100%;
+}
+
+.dashboard-page h1 {
+  font-size: 2.2rem;
+  color: #2d3748;
+  margin-bottom: 2rem;
+  font-weight: 700;
+}

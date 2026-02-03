@@ -1,0 +1,86 @@
+/* Summary Cards Styles */
+.summary-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-left: 4px solid #667eea;
+  transition: all 0.3s ease;
+}
+
+.summary-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.summary-card.profit {
+  border-left-color: #48bb78;
+}
+
+.summary-card.loss {
+  border-left-color: #f56565;
+}
+
+.card-label {
+  font-size: 0.9rem;
+  color: #718096;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.card-percentage {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.summary-card.profit .card-percentage {
+  color: #48bb78;
+}
+
+.summary-card.loss .card-percentage {
+  color: #f56565;
+}
+
+/* Loading and Error States */
+.summary-cards-container p {
+  text-align: center;
+  color: #718096;
+  padding: 2rem;
+}
+
+.error-message {
+  background-color: #fed7d7;
+  border: 1px solid #fc8181;
+  border-radius: 4px;
+  padding: 1rem;
+  color: #c53030;
+  margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .summary-cards-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .card-value {
+    font-size: 1.5rem;
+  }
+}

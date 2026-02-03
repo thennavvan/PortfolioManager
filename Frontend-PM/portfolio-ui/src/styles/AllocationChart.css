@@ -1,0 +1,62 @@
+/* Allocation Chart Styles */
+.allocation-container {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+}
+
+.allocation-container h2 {
+  font-size: 1.5rem;
+  color: #2d3748;
+  margin-bottom: 2rem;
+  font-weight: 600;
+}
+
+.allocation-container p {
+  text-align: center;
+  color: #718096;
+  padding: 2rem;
+}
+
+/* Custom Tooltip */
+.custom-tooltip {
+  background: white;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  padding: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.custom-tooltip .label {
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+  margin-bottom: 0.25rem;
+}
+
+.custom-tooltip .value {
+  color: #667eea;
+  font-weight: 600;
+  margin: 0;
+  margin-bottom: 0.25rem;
+}
+
+.custom-tooltip .percentage {
+  color: #48bb78;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .allocation-container {
+    padding: 1rem;
+  }
+
+  .allocation-container h2 {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+}

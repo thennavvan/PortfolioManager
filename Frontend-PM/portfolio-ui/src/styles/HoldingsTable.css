@@ -1,0 +1,102 @@
+/* Holdings Table Styles */
+.holdings-container {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.holdings-container h2 {
+  font-size: 1.5rem;
+  color: #2d3748;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+.holdings-container p {
+  text-align: center;
+  color: #718096;
+  padding: 2rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.holdings-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.holdings-table thead {
+  background-color: #edf2f7;
+  border-bottom: 2px solid #cbd5e0;
+}
+
+.holdings-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.holdings-table tbody tr {
+  border-bottom: 1px solid #e2e8f0;
+  transition: background-color 0.2s ease;
+}
+
+.holdings-table tbody tr:hover {
+  background-color: #f7fafc;
+}
+
+.holdings-table td {
+  padding: 1rem;
+  color: #4a5568;
+}
+
+.symbol-cell {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.profit {
+  color: #48bb78;
+  font-weight: 600;
+}
+
+.loss {
+  color: #f56565;
+  font-weight: 600;
+}
+
+.error-message {
+  background-color: #fed7d7;
+  border: 1px solid #fc8181;
+  border-radius: 4px;
+  padding: 1rem;
+  color: #c53030;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .holdings-container {
+    padding: 1rem;
+  }
+
+  .holdings-table {
+    font-size: 0.85rem;
+  }
+
+  .holdings-table th,
+  .holdings-table td {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .holdings-table th {
+    font-size: 0.8rem;
+  }
+}
