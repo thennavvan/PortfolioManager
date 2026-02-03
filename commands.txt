@@ -9,3 +9,56 @@ GET http://localhost:8080/api/portfolio/summary
 GET http://localhost:8080/api/portfolio/holdings
 
 GET http://localhost:8080/api/portfolio/allocation
+
+GET http://localhost:8080/api/portfolio/holdings
+
+-------------------------------------
+
+now the springboot application 'PortfolioManager' has -
+
+com.thrive.enitity.Asset
+
+controller.AssetController
+controller.PortfolioController
+
+dto.Holdingdto
+dto.PortfolioAllocationItem
+dto.PortfolioAllocationResponse
+dto.PortfolioAssetSummary
+dto.PortfolioSummary
+dto.PortfolioSummaryResponse
+dto.PriceResponse
+
+exception.AssetException
+
+repo.AssetRepo
+
+service.AssetService
+service.MarketPriceService
+service.PortfolioService
+
+variables that will be used from backend to display on frontend(like profit loss, totalvalue ,etc) - 
+currentPrice
+investedValue
+marketValue
+profitLoss
+profitLossPercent
+
+
+
+the endpoints that i tested out and that worked in postman - 
+http://localhost:8080/api/assets
+http://localhost:8080/api/assets/summary
+http://localhost:8080/api/assets/price/AAPL
+http://localhost:8080/api/portfolio/summary
+http://localhost:8080/api/portfolio/holdings
+http://localhost:8080/api/portfolio/allocation
+http://localhost:8080/api/portfolio/holdings
+
+a python folder - YahooLivePrice which contains a flask python application app.py that uses yfinance to fetch live data (it runs on 8000)
+
+now i wanna create a frontend that incorporates all these backend features so that i can see how these all come together
+
+ i am gonna use copilot to generate the backend, so use whatever i have given here to generate the perfect prompt to give to copilot to generate the frontend
+
+the frontend should allow to add remove asset, view live stock price, dashboard, asset summary, portfolio summary, profit loss etc
