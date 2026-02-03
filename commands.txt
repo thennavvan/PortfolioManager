@@ -1,0 +1,11 @@
+POST - http://localhost:8080/api/assets
+
+GET http://localhost:8080/api/assets/summary
+
+GET http://localhost:8080/api/assets/price/AAPL
+
+GET http://localhost:8080/api/portfolio/summary
+
+GET http://localhost:8080/api/portfolio/holdings
+
+GET http://localhost:8080/api/portfolio/allocation

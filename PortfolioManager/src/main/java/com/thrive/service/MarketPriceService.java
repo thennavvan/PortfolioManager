@@ -7,13 +7,13 @@ import org.springframework.web.client.RestClient;
 @Service
 public class MarketPriceService {
 
-    private final RestClient restClient;
+    private static RestClient restClient = null;
 
     public MarketPriceService() {
         this.restClient = RestClient.create("http://localhost:8000");
     }
 
-    public PriceResponse getLivePrice(String symbol) {
+    public static PriceResponse getLivePrice(String symbol) {
         try {
             return restClient
                     .get()

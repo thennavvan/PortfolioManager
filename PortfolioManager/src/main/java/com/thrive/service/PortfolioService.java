@@ -1,12 +1,9 @@
 package com.thrive.service;
 
-import com.thrive.dto.PortfolioAssetSummary;
-import com.thrive.dto.PortfolioSummaryResponse;
+import com.thrive.dto.*;
 import com.thrive.entity.Asset;
 import com.thrive.repo.AssetRepo;
 import org.springframework.stereotype.Service;
-import com.thrive.dto.PortfolioAllocationItem;
-import com.thrive.dto.PortfolioAllocationResponse;
 
 import java.util.ArrayList;
 import java.util.*;
@@ -31,7 +28,7 @@ public class PortfolioService {
         Double totalValue = 0.0;
 
         for (Asset asset : assets) {
-            Double price = marketPriceService.getLivePrice(asset.getSymbol()).getPrice();
+            Double price = MarketPriceService.getLivePrice(asset.getSymbol()).getPrice();
             PortfolioAssetSummary summary =
                     new PortfolioAssetSummary(
                             asset.getSymbol(),
@@ -80,4 +77,44 @@ public class PortfolioService {
     private double round(double value) {
         return Math.round(value * 100.0) / 100.0;
     }
+
+    public List<HoldingDto> getHoldings() {
+
+        List<Asset> assets = assetRepo.findAll();
+        List<HoldingDto> holdings = new ArrayList<>();
+
+        for (Asset asset : assets) {
+
+            double currentPrice = MarketPriceService
+                    .getLivePrice(asset.getSymbol())
+                    .getPrice();
+
+            double investedValue = asset.getQuantity() * asset.getBuyPrice();
+            double marketValue = asset.getQuantity() * currentPrice;
+            double profitLoss = marketValue - investedValue;
+
+            double profitLossPercent = investedValue == 0
+                    ? 0
+                    : (profitLoss / investedValue) * 100;
+
+            HoldingDto dto = new HoldingDto();
+            dto.setSymbol(asset.getSymbol());
+            dto.setAssetType(asset.getAssetType().name());
+            dto.setQuantity(asset.getQuantity());
+            dto.setBuyPrice(asset.getBuyPrice());
+            dto.setCurrentPrice(currentPrice);
+            dto.setInvestedValue(round(investedValue));
+            dto.setMarketValue(round(marketValue));
+            dto.setProfitLoss(round(profitLoss));
+            dto.setProfitLossPercent(round(profitLossPercent));
+
+            holdings.add(dto);
+        }
+
+        return holdings;
+    }
+
+//    private double round(double value) {
+//        return Math.round(value * 100.0) / 100.0;
+//    }
 }
