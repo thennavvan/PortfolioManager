@@ -1,7 +1,9 @@
 package com.thrive.controller;
 
 import com.thrive.dto.HoldingDto;
+import com.thrive.dto.PortfolioHistoryPoint;
 import com.thrive.dto.PortfolioSummaryResponse;
+import com.thrive.service.PortfolioHistoryService;
 import com.thrive.service.PortfolioService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,10 +18,13 @@ import java.util.List;
 public class PortfolioController {
 
     private final PortfolioService portfolioService;
+    private final PortfolioHistoryService portfolioHistoryService;
 
-    public PortfolioController(PortfolioService portfolioService) {
+    public PortfolioController(PortfolioService portfolioService,
+                               PortfolioHistoryService portfolioHistoryService) {
 
         this.portfolioService = portfolioService;
+        this.portfolioHistoryService = portfolioHistoryService;
     }
 
     @GetMapping("/summary")
@@ -37,6 +42,11 @@ public class PortfolioController {
     @GetMapping("/holdings")
     public ResponseEntity<List<HoldingDto>> getHoldings() {
         return ResponseEntity.ok(portfolioService.getHoldings());
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<List<PortfolioHistoryPoint>> getHistory() {
+        return ResponseEntity.ok(portfolioHistoryService.getHistory());
     }
 
 }

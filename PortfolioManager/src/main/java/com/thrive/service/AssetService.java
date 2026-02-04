@@ -28,6 +28,19 @@ public class AssetService {
         return assetRepo.findById(id);
     }
 
+    public Asset updateAsset(Long id, Asset updated) {
+        Asset existing = assetRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Asset not found with id: " + id));
+
+        existing.setTickerSymbol(updated.getTickerSymbol());
+        existing.setCompanyName(updated.getCompanyName());
+        existing.setAssetType(updated.getAssetType());
+        existing.setQuantityOwned(updated.getQuantityOwned());
+        existing.setBuyPrice(updated.getBuyPrice());
+
+        return assetRepo.save(existing);
+    }
+
     public void deleteAsset(Long id){
         assetRepo.deleteById(id);
     }
@@ -39,15 +52,14 @@ public class AssetService {
         int totalAssets = assets.size();
 
         Double totalQuantity = assets.stream()
-                .mapToDouble(Asset::getQuantity)
+                .mapToDouble(Asset::getQuantityOwned)
                 .sum();
 
         Double totalInvestedValue = assets.stream()
-                .mapToDouble(asset -> asset.getQuantity() * asset.getBuyPrice())
+                .mapToDouble(asset -> asset.getQuantityOwned() * asset.getBuyPrice())
                 .sum();
 
         return new PortfolioSummary(totalAssets, totalQuantity, totalInvestedValue);
     }
 
 }
-

@@ -1,6 +1,5 @@
 package com.thrive.entity;
 
-
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,9 +10,13 @@ import jakarta.validation.constraints.Positive;
 public class Asset {
     public enum AssetType {
         STOCK,
+        BOND,
         CRYPTO,
-        FOREX,
-        ETF
+        CASH,
+        ETF,
+        COMMODITY,
+        REAL_ESTATE,
+        MUTUAL_FUND
     }
 
     @Id
@@ -21,12 +24,12 @@ public class Asset {
     private Long id;
 
     @Column(nullable = false)
-    @NotBlank(message = "Asset name cannot be empty")
-    private String name;
+    @NotBlank(message = "Company name cannot be empty")
+    private String companyName;
 
-    @Column(nullable = false, unique = true)
-    @NotBlank(message = "Symbol cannot be empty")
-    private String symbol;
+    @Column(nullable = false)
+    @NotBlank(message = "Ticker symbol cannot be empty")
+    private String tickerSymbol;
 
     @NotNull(message = "Asset type is required")
     @Enumerated(EnumType.STRING)
@@ -35,7 +38,7 @@ public class Asset {
 
     @Positive(message = "Quantity must be greater than zero")
     @Column(nullable = false)
-    private Double quantity;
+    private Double quantityOwned;
 
     @Positive(message = "Buy price must be greater than zero")
     @Column(nullable = false)
@@ -44,11 +47,11 @@ public class Asset {
     public Asset() {
     }
 
-    public Asset(String name, String symbol, AssetType assetType, Double quantity, Double buyPrice) {
-        this.name = name;
-        this.symbol = symbol;
+    public Asset(String companyName, String tickerSymbol, AssetType assetType, Double quantityOwned, Double buyPrice) {
+        this.companyName = companyName;
+        this.tickerSymbol = tickerSymbol;
         this.assetType = assetType;
-        this.quantity = quantity;
+        this.quantityOwned = quantityOwned;
         this.buyPrice = buyPrice;
     }
 
@@ -56,20 +59,20 @@ public class Asset {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public String getCompanyName() {
+        return companyName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 
-    public String getSymbol() {
-        return symbol;
+    public String getTickerSymbol() {
+        return tickerSymbol;
     }
 
-    public void setSymbol(String symbol) {
-        this.symbol = symbol;
+    public void setTickerSymbol(String tickerSymbol) {
+        this.tickerSymbol = tickerSymbol;
     }
 
     public AssetType getAssetType() {
@@ -80,12 +83,12 @@ public class Asset {
         this.assetType = assetType;
     }
 
-    public Double getQuantity() {
-        return quantity;
+    public Double getQuantityOwned() {
+        return quantityOwned;
     }
 
-    public void setQuantity(Double quantity) {
-        this.quantity = quantity;
+    public void setQuantityOwned(Double quantityOwned) {
+        this.quantityOwned = quantityOwned;
     }
 
     public Double getBuyPrice() {
@@ -95,5 +98,4 @@ public class Asset {
     public void setBuyPrice(Double buyPrice) {
         this.buyPrice = buyPrice;
     }
-
 }

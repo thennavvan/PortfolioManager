@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Portfolio Manager</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container">
+      <div class="brand">
+        <div class="brand__title">Portfolio Manager</div>
+        <div class="brand__subtitle">Live prices via Yahoo Finance</div>
+      </div>
+      <div class="topbar__actions">
+        <button id="refreshBtn" class="btn btn--secondary" type="button">Refresh</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="grid cards">
+      <div class="card">
+        <div class="card__label">Total Amount Spent</div>
+        <div class="card__value" id="totalSpent">$0.00</div>
+      </div>
+      <div class="card">
+        <div class="card__label">Total Number of Assets</div>
+        <div class="card__value" id="totalAssets">0</div>
+      </div>
+      <div class="card">
+        <div class="card__label">Current Portfolio Value</div>
+        <div class="card__value" id="currentValue">$0.00</div>
+      </div>
+      <div class="card">
+        <div class="card__label">Total Profit / Loss</div>
+        <div class="card__value" id="totalPL">$0.00</div>
+        <div class="card__meta" id="totalPLPct">0.00%</div>
+      </div>
+    </section>
+
+    <section class="grid charts">
+      <div class="panel">
+        <div class="panel__header">
+          <div class="panel__title">Asset Allocation</div>
+          <div class="panel__subtitle">Stocks vs Bonds vs Crypto vs Cash</div>
+        </div>
+        <div class="panel__body">
+          <canvas id="allocationChart"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel__header">
+          <div class="panel__title">Portfolio Value Over Time</div>
+          <div class="panel__subtitle">Recorded snapshots</div>
+        </div>
+        <div class="panel__body">
+          <canvas id="historyChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__header">
+        <div class="panel__title">Holdings</div>
+        <div class="panel__subtitle">Click a row to edit</div>
+      </div>
+      <div class="panel__body">
+        <div class="table-wrap">
+          <table class="table" id="holdingsTable">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Company Name</th>
+                <th class="num">Quantity</th>
+                <th class="num">Buy Price</th>
+                <th class="num">Current Price</th>
+                <th class="num">Market Value</th>
+                <th class="num">Profit / Loss</th>
+              </tr>
+            </thead>
+            <tbody id="holdingsTbody">
+              <tr><td colspan="7" class="muted">No assets yet. Add one below.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel__header">
+        <div class="panel__title">Add / Edit / Delete</div>
+        <div class="panel__subtitle">Manage what you own</div>
+      </div>
+      <div class="panel__body">
+        <form id="assetForm" class="form">
+          <input type="hidden" id="assetId" />
+
+          <div class="form__row">
+            <label class="field">
+              <span class="field__label">Ticker</span>
+              <input id="tickerSymbol" class="field__input" placeholder="AAPL" required />
+            </label>
+
+            <label class="field">
+              <span class="field__label">Company Name</span>
+              <input id="companyName" class="field__input" placeholder="Apple Inc." required />
+            </label>
+          </div>
+
+          <div class="form__row">
+            <label class="field">
+              <span class="field__label">Quantity</span>
+              <input id="quantityOwned" class="field__input" type="number" step="0.0001" min="0" required />
+            </label>
+
+            <label class="field">
+              <span class="field__label">Buy Price</span>
+              <input id="buyPrice" class="field__input" type="number" step="0.01" min="0" required />
+            </label>
+
+            <label class="field">
+              <span class="field__label">Asset Type</span>
+              <select id="assetType" class="field__input" required>
+                <option value="STOCK">Stock</option>
+                <option value="BOND">Bond</option>
+                <option value="CRYPTO">Crypto</option>
+                <option value="CASH">Cash</option>
+                <option value="ETF">ETF</option>
+                <option value="COMMODITY">Commodity</option>
+                <option value="REAL_ESTATE">Real Estate</option>
+                <option value="MUTUAL_FUND">Mutual Fund</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="form__actions">
+            <button id="addBtn" class="btn" type="submit">Add</button>
+            <button id="updateBtn" class="btn btn--secondary" type="button" disabled>Update</button>
+            <button id="deleteBtn" class="btn btn--danger" type="button" disabled>Delete</button>
+            <button id="clearBtn" class="btn btn--ghost" type="button">Clear</button>
+          </div>
+
+          <div class="form__status" id="formStatus"></div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

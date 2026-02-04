@@ -5,6 +5,9 @@ public class PriceResponse {
     private Double price;
     private String currency;
 
+    public PriceResponse() {
+    }
+
     public PriceResponse(String symbol, Double price, String currency) {
         this.symbol = symbol;
         this.price = price;
@@ -21,5 +24,17 @@ public class PriceResponse {
 
     public String getCurrency() {
         return currency;
+    }
+
+    public void setSymbol(String symbol) {
+        this.symbol = symbol;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
     }
 }

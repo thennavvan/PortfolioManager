@@ -28,12 +28,14 @@ public class PortfolioService {
         Double totalValue = 0.0;
 
         for (Asset asset : assets) {
-            Double price = MarketPriceService.getLivePrice(asset.getSymbol()).getPrice();
+            Double price = marketPriceService.getLivePrice(asset.getTickerSymbol()).getPrice();
+            // If current price is 0 (Yahoo down), use buy price to avoid misleading loss
+            Double effectivePrice = (price == 0.0) ? asset.getBuyPrice() : price;
             PortfolioAssetSummary summary =
                     new PortfolioAssetSummary(
-                            asset.getSymbol(),
-                            asset.getQuantity(),
-                            price
+                            asset.getTickerSymbol(),
+                            asset.getQuantityOwned(),
+                            effectivePrice
                     );
 
             summaries.add(summary);
@@ -51,8 +53,10 @@ public class PortfolioService {
         double totalValue = 0.0;
 
         for (Asset asset : assets) {
-            double currentPrice = marketPriceService.getLivePrice(asset.getSymbol()).getPrice();
-            double marketValue = currentPrice * asset.getQuantity();
+            double currentPrice = marketPriceService.getLivePrice(asset.getTickerSymbol()).getPrice();
+            // If current price is 0 (Yahoo down), use buy price to avoid misleading allocation
+            double effectivePrice = (currentPrice == 0.0) ? asset.getBuyPrice() : currentPrice;
+            double marketValue = effectivePrice * asset.getQuantityOwned();
 
             valueByType.merge(asset.getAssetType().name(), marketValue, Double::sum);
             totalValue += marketValue;
@@ -61,7 +65,7 @@ public class PortfolioService {
         List<PortfolioAllocationItem> allocation = new ArrayList<>();
 
         for (Map.Entry<String, Double> entry : valueByType.entrySet()) {
-            double percentage = (entry.getValue() / totalValue) * 100;
+            double percentage = (totalValue == 0) ? 0 : (entry.getValue() / totalValue) * 100;
             allocation.add(
                     new PortfolioAllocationItem(
                             entry.getKey(),
@@ -85,12 +89,15 @@ public class PortfolioService {
 
         for (Asset asset : assets) {
 
-            double currentPrice = MarketPriceService
-                    .getLivePrice(asset.getSymbol())
+            double currentPrice = marketPriceService
+                    .getLivePrice(asset.getTickerSymbol())
                     .getPrice();
 
-            double investedValue = asset.getQuantity() * asset.getBuyPrice();
-            double marketValue = asset.getQuantity() * currentPrice;
+            // If current price is 0 (Yahoo down), use buy price to avoid misleading loss
+            double effectivePrice = (currentPrice == 0.0) ? asset.getBuyPrice() : currentPrice;
+
+            double investedValue = asset.getQuantityOwned() * asset.getBuyPrice();
+            double marketValue = asset.getQuantityOwned() * effectivePrice;
             double profitLoss = marketValue - investedValue;
 
             double profitLossPercent = investedValue == 0
@@ -98,11 +105,11 @@ public class PortfolioService {
                     : (profitLoss / investedValue) * 100;
 
             HoldingDto dto = new HoldingDto();
-            dto.setSymbol(asset.getSymbol());
+            dto.setSymbol(asset.getTickerSymbol());
             dto.setAssetType(asset.getAssetType().name());
-            dto.setQuantity(asset.getQuantity());
+            dto.setQuantity(asset.getQuantityOwned());
             dto.setBuyPrice(asset.getBuyPrice());
-            dto.setCurrentPrice(currentPrice);
+            dto.setCurrentPrice(effectivePrice);
             dto.setInvestedValue(round(investedValue));
             dto.setMarketValue(round(marketValue));
             dto.setProfitLoss(round(profitLoss));
