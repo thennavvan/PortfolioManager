@@ -10,15 +10,13 @@ import com.thrive.dto.PriceResponse;
 import com.thrive.service.MarketPriceService;
 import java.util.List;
 
-
-
 @RestController
 @RequestMapping("/api/assets")
 public class AssetController {
     private final AssetService assetService;
     private final MarketPriceService marketPriceService;
 
-    public AssetController(AssetService assetService, MarketPriceService marketPriceService){
+    public AssetController(AssetService assetService, MarketPriceService marketPriceService) {
         this.assetService = assetService;
         this.marketPriceService = marketPriceService;
     }

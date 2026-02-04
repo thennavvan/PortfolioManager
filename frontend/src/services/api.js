@@ -49,6 +49,11 @@ export const getLivePrice = (symbol) => {
   return apiClient.get(`/assets/price/${symbol}`);
 };
 
+export const getPriceHistory = (symbol) => {
+  const priceServiceUrl = 'http://localhost:8000/price-history';
+  return axios.get(`${priceServiceUrl}/${symbol}`);
+};
+
 // ==================== PORTFOLIO ====================
 
 export const getPortfolioSummary = () => {

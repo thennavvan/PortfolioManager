@@ -48,16 +48,20 @@ public class PortfolioController {
     public ResponseEntity<?> autoSaveSnapshot() {
         PortfolioSnapshot snapshot = portfolioService.autoSaveSnapshotIfNeeded();
         if (snapshot != null) {
-            return ResponseEntity.ok(new java.util.HashMap<String, Object>() {{
-                put("saved", true);
-                put("snapshot", snapshot);
-                put("message", "Daily snapshot saved automatically");
-            }});
+            return ResponseEntity.ok(new java.util.HashMap<String, Object>() {
+                {
+                    put("saved", true);
+                    put("snapshot", snapshot);
+                    put("message", "Daily snapshot saved automatically");
+                }
+            });
         }
-        return ResponseEntity.ok(new java.util.HashMap<String, Object>() {{
-            put("saved", false);
-            put("message", "Snapshot already saved today");
-        }});
+        return ResponseEntity.ok(new java.util.HashMap<String, Object>() {
+            {
+                put("saved", false);
+                put("message", "Snapshot already saved today");
+            }
+        });
     }
 
     @GetMapping("/history")

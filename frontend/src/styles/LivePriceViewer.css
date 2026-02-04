@@ -157,6 +157,22 @@
   transform: none;
 }
 
+.history-section {
+  background: var(--surface);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  margin-bottom: 2rem;
+  animation: slideIn 0.3s ease;
+}
+
+.history-section h3 {
+  color: var(--text);
+  margin: 0 0 1.5rem 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
 @media (max-width: 768px) {
   .live-price-viewer h1 {
     font-size: 24px;
@@ -178,5 +194,9 @@
 
   .search-history {
     margin-top: 1.5rem;
+  }
+
+  .history-section {
+    padding: 1.5rem;
   }
 }

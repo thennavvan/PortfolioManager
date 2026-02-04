@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { getLivePrice } from '../services/api';
+import { getLivePrice, getPriceHistory } from '../services/api';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import '../styles/LivePriceViewer.css';
 
 const LivePriceViewer = () => {
   const [symbol, setSymbol] = useState('');
   const [priceData, setPriceData] = useState(null);
+  const [historyData, setHistoryData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchHistory, setSearchHistory] = useState([]);
@@ -19,8 +21,21 @@ const LivePriceViewer = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await getLivePrice(symbol.toUpperCase());
-      setPriceData(response.data);
+      setHistoryData(null);
+      
+      // Fetch current price
+      const priceResponse = await getLivePrice(symbol.toUpperCase());
+      setPriceData(priceResponse.data);
+      
+      // Fetch price history
+      try {
+        const historyResponse = await getPriceHistory(symbol.toUpperCase());
+        if (historyResponse.data && historyResponse.data.history) {
+          setHistoryData(historyResponse.data.history);
+        }
+      } catch (historyErr) {
+        console.error('Error fetching price history:', historyErr);
+      }
       
       // Add to history
       if (!searchHistory.includes(symbol.toUpperCase())) {
@@ -29,6 +44,7 @@ const LivePriceViewer = () => {
     } catch (err) {
       setError(err.message || 'Failed to fetch price data');
       setPriceData(null);
+      setHistoryData(null);
       console.error(err);
     } finally {
       setLoading(false);
@@ -76,6 +92,63 @@ const LivePriceViewer = () => {
               Updated: {new Date().toLocaleTimeString()}
             </p>
           </div>
+        </div>
+      )}
+
+      {historyData && historyData.length > 0 && (
+        <div className="history-section">
+          <h3>Price History (30 Days)</h3>
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={historyData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis 
+                dataKey="date" 
+                stroke="var(--text-secondary)"
+                style={{ fontSize: '12px' }}
+              />
+              <YAxis 
+                stroke="var(--text-secondary)"
+                style={{ fontSize: '12px' }}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'var(--surface)', 
+                  border: `1px solid var(--border)`,
+                  borderRadius: '6px',
+                  color: 'var(--text)'
+                }}
+                formatter={(value) => `$${value.toFixed(2)}`}
+                labelStyle={{ color: 'var(--text)' }}
+              />
+              <Legend />
+              <Line 
+                type="monotone" 
+                dataKey="close" 
+                stroke="var(--primary)" 
+                dot={false}
+                strokeWidth={2}
+                name="Closing Price"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="high" 
+                stroke="var(--success)" 
+                dot={false}
+                strokeWidth={1}
+                opacity={0.6}
+                name="High"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="low" 
+                stroke="var(--danger)" 
+                dot={false}
+                strokeWidth={1}
+                opacity={0.6}
+                name="Low"
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       )}
 
