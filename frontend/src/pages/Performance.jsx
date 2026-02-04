@@ -208,7 +208,7 @@ const Performance = () => {
           </ResponsiveContainer>
         ) : (
           <div className="empty-state">
-            <div className="empty-icon">📊</div>
+            <div className="empty-icon">▦</div>
             <p><strong>No portfolio history available yet</strong></p>
             <p>Portfolio snapshots are saved automatically every day at midnight, or you can click "Save Snapshot" to capture your portfolio value right now.</p>
             <p style={{ marginTop: '1rem', fontSize: '12px', color: 'var(--text-secondary)' }}>

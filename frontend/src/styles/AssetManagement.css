@@ -104,6 +104,94 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
+.table-container {
+  background: var(--surface);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+}
+
+.assets-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.assets-table thead {
+  background: var(--surface-light);
+  border-bottom: 2px solid var(--border);
+}
+
+.assets-table th {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  padding: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.assets-table th:nth-child(1) {
+  width: 15%;
+}
+
+.assets-table th:nth-child(2) {
+  width: 20%;
+}
+
+.assets-table th:nth-child(3) {
+  width: 15%;
+  text-align: right;
+}
+
+.assets-table th:nth-child(4) {
+  width: 20%;
+  text-align: right;
+}
+
+.assets-table th:nth-child(5) {
+  width: 30%;
+  text-align: center;
+}
+
+.assets-table td {
+  color: var(--text);
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+
+.assets-table tbody tr:hover {
+  background: var(--surface-light);
+}
+
+.assets-table .symbol {
+  font-weight: 600;
+  color: var(--primary);
+  text-align: left;
+}
+
+.assets-table .number {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+}
+
+.assets-table .currency {
+  text-align: right;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  color: var(--success);
+}
+
+.assets-table .actions {
+  text-align: center;
+  white-space: nowrap;
+}
+
 @media (max-width: 768px) {
   .asset-management h1 {
     font-size: 26px;

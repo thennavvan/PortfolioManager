@@ -1,7 +1,8 @@
 .app {
   display: flex;
   min-height: 100vh;
-  background: var(--bg);
+  background: var(--background);
+  transition: background-color 0.3s ease;
 }
 
 .main-layout {
@@ -9,6 +10,12 @@
   flex-direction: column;
   flex: 1;
   overflow: hidden;
+  margin-left: 240px;
+  transition: margin-left 0.3s ease;
+}
+
+.main-layout.sidebar-collapsed {
+  margin-left: 80px;
 }
 
 .main-content {
@@ -73,6 +80,10 @@
 @media (max-width: 768px) {
   .app {
     flex-direction: column;
+  }
+
+  .main-layout {
+    margin-left: 0;
   }
 
   .main-content {

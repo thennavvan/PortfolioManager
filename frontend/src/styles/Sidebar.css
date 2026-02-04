@@ -10,7 +10,7 @@
   top: 0;
   transition: all 0.3s ease;
   z-index: 1000;
-  box-shadow: 4px 0 6px -1px rgba(0, 0, 0, 0.3);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
 }
 
 .sidebar.collapsed {
@@ -18,36 +18,11 @@
 }
 
 .sidebar-header {
-  padding: 1.5rem 1rem;
+  padding: 1rem;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex: 1;
-}
-
-.logo-icon {
-  font-size: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logo-text {
-  font-weight: 700;
-  font-size: 16px;
-  color: var(--primary);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  justify-content: flex-start;
 }
 
 .collapse-btn {
@@ -55,11 +30,16 @@
   border: none;
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: 18px;
-  padding: 4px 8px;
+  font-size: 20px;
+  padding: 8px 12px;
   border-radius: 4px;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .collapse-btn:hover {
@@ -71,8 +51,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 1rem 0.5rem;
+  gap: 0;
+  padding: 0.5rem;
   overflow-y: auto;
 }
 
@@ -89,8 +69,9 @@
   font-size: 14px;
   font-weight: 500;
   transition: all 0.2s ease;
-  width: calc(100% - 1rem);
-  margin-left: 0.5rem;
+  width: 100%;
+  margin: 0;
+  justify-content: flex-start;
 }
 
 .nav-item:hover {
@@ -103,50 +84,7 @@
   color: white;
 }
 
-.nav-icon {
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-}
-
-.nav-label {
-  flex: 1;
-  text-align: left;
-}
-
 .sidebar.collapsed .nav-label {
-  display: none;
-}
-
-.sidebar-footer {
-  padding: 1rem 0.5rem;
-  border-top: 1px solid var(--border);
-}
-
-.logout-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  padding: 12px 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  width: 100%;
-}
-
-.logout-btn:hover {
-  background: rgba(239, 83, 80, 0.1);
-  color: #ff6b6b;
-}
-
-.sidebar.collapsed .logout-btn span {
   display: none;
 }
 

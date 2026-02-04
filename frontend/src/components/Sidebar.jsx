@@ -1,30 +1,25 @@
 import React, { useState } from 'react';
 import '../styles/Sidebar.css';
 
-const Sidebar = ({ currentPage, setCurrentPage }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+const Sidebar = ({ currentPage, setCurrentPage, isCollapsed, setIsCollapsed }) => {
 
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: '📊' },
-    { id: 'holdings', label: 'Portfolio Holdings', icon: '📈' },
-    { id: 'assets', label: 'Assets', icon: '💼' },
-    { id: 'prices', label: 'Live Prices', icon: '💹' },
-    { id: 'performance', label: 'Performance', icon: '📉' }
+    { id: 'dashboard', label: 'Dashboard' },
+    { id: 'holdings', label: 'Portfolio Holdings' },
+    { id: 'assets', label: 'Assets' },
+    { id: 'prices', label: 'Live Prices' },
+    { id: 'performance', label: 'Performance' }
   ];
 
   return (
     <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
-        <div className="logo">
-          <span className="logo-icon">🎯</span>
-          {!isCollapsed && <span className="logo-text">Portfolio Manager</span>}
-        </div>
         <button 
           className="collapse-btn"
           onClick={() => setIsCollapsed(!isCollapsed)}
-          title={isCollapsed ? 'Expand' : 'Collapse'}
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {isCollapsed ? '→' : '←'}
+          ☰
         </button>
       </div>
 
@@ -36,18 +31,10 @@ const Sidebar = ({ currentPage, setCurrentPage }) => {
             onClick={() => setCurrentPage(item.id)}
             title={isCollapsed ? item.label : ''}
           >
-            <span className="nav-icon">{item.icon}</span>
             {!isCollapsed && <span className="nav-label">{item.label}</span>}
           </button>
         ))}
       </nav>
-
-      <div className="sidebar-footer">
-        <button className="logout-btn" title="Logout">
-          🚪
-          {!isCollapsed && <span>Logout</span>}
-        </button>
-      </div>
     </aside>
   );
 };

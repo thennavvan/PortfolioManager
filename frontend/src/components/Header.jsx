@@ -1,7 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Header.css';
 
-const Header = ({ currentPage, onSearch, searchQuery, setSearchQuery }) => {
+const Header = ({ currentPage }) => {
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  useEffect(() => {
+    // Check system preference and localStorage
+    const savedMode = localStorage.getItem('themeMode');
+    if (savedMode) {
+      setIsDarkMode(savedMode === 'dark');
+      applyTheme(savedMode === 'dark');
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(prefersDark);
+      applyTheme(prefersDark);
+    }
+  }, []);
+
+  const applyTheme = (isDark) => {
+    if (isDark) {
+      document.body.classList.remove('light-mode');
+      localStorage.setItem('themeMode', 'dark');
+    } else {
+      document.body.classList.add('light-mode');
+      localStorage.setItem('themeMode', 'light');
+    }
+  };
+
+  const toggleTheme = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    applyTheme(newMode);
+  };
+
   const getPageTitle = () => {
     const titles = {
       dashboard: 'Dashboard',
@@ -17,16 +48,9 @@ const Header = ({ currentPage, onSearch, searchQuery, setSearchQuery }) => {
     <header className="header">
       <div className="header-content">
         <h2 className="header-title">{getPageTitle()}</h2>
-        <form className="search-form" onSubmit={onSearch}>
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search assets, holdings, prices..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <button type="submit" className="search-btn">🔍</button>
-        </form>
+        <button className="theme-toggle-btn" onClick={toggleTheme} title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}>
+          {isDarkMode ? '☀️' : '🌙'}
+        </button>
       </div>
     </header>
   );

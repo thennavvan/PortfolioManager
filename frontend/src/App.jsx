@@ -10,7 +10,7 @@ import './styles/App.css';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const renderPage = () => {
     switch (currentPage) {
@@ -37,22 +37,22 @@ function App() {
 
   return (
     <div className="app">
-      <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+      <Sidebar 
+        currentPage={currentPage} 
+        setCurrentPage={setCurrentPage}
+        isCollapsed={isSidebarCollapsed}
+        setIsCollapsed={setIsSidebarCollapsed}
+      />
       
-      <div className="main-layout">
-        <Header 
-          currentPage={currentPage} 
-          onSearch={handleSearch}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-        />
+      <div className={`main-layout ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        <Header currentPage={currentPage} />
 
         <main className="main-content">
           {renderPage()}
         </main>
 
         <footer className="footer">
-          <p>&copy; 2024 Portfolio Manager. All rights reserved.</p>
+          <p>&copy; Team Thrive - PortfolioManager</p>
         </footer>
       </div>
     </div>
