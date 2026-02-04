@@ -24,4 +24,14 @@ public class AssetException {
 
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(TickerValidationException.class)
+    public ResponseEntity<Map<String, String>> handleTickerValidationError(
+            TickerValidationException ex) {
+        
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
 }

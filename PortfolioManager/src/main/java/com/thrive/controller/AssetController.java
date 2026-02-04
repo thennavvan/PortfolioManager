@@ -29,6 +29,21 @@ public class AssetController {
         return ResponseEntity.ok(savedAsset);
     }
 
+    // PUT (Update) asset by ID
+    @PutMapping("/{id}")
+    public ResponseEntity<Asset> updateAsset(@PathVariable Long id, @Valid @RequestBody Asset assetDetails) {
+        Asset updatedAsset = assetService.updateAsset(id, assetDetails);
+        return ResponseEntity.ok(updatedAsset);
+    }
+
+    // GET asset by symbol
+    @GetMapping("/symbol/{symbol}")
+    public ResponseEntity<Asset> getAssetBySymbol(@PathVariable String symbol) {
+        return assetService.findBySymbol(symbol)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     // GET all assets
     @GetMapping
     public ResponseEntity<List<Asset>> getAllAssets() {
