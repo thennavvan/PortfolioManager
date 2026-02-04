@@ -1,0 +1,93 @@
+# Asset Management Update - Complete Fix
+
+## Backend Changes Made:
+
+### 1. AssetRepo.java
+- Added `findBySymbol(String symbol)` method to find existing assets by their symbol
+
+### 2. AssetService.java
+- Added `findBySymbol(String symbol)` method
+- Added `updateAsset(Long id, Asset assetDetails)` method for updating existing assets
+
+### 3. AssetController.java
+- Added `PUT /api/assets/{id}` endpoint to update assets
+- Added `GET /api/assets/symbol/{symbol}` endpoint to check if an asset exists
+
+## Frontend Changes Made:
+
+### 1. API Service (src/services/api.js)
+- Added `updateAsset(id, assetData)` function
+- Added `getAssetBySymbol(symbol)` function for checking existing assets
+
+### 2. AddAssetForm Component
+- Now accepts `editingAsset` prop for edit mode
+- Added `onCancel` callback for canceling edits
+- Checks if a symbol already exists using `getAssetBySymbol`
+- Shows "Update Quantity" message when asset already exists
+- Supports both creating new and updating existing assets
+- Symbol field is disabled when editing to prevent changing the symbol
+- Added loading indicator for symbol checking
+
+### 3. AssetManagement Page
+- Added edit button next to each asset in the table
+- Edit button opens the form with the asset's current values
+- Form now handles both "Add" and "Update" operations
+- Success messages differentiate between "added" and "updated"
+
+### 4. Styles Updates
+- Added `.info-box` style for displaying update information
+- Added `.checking` style for the symbol checking indicator
+- Added `.form-actions` style for button layout
+- Added `.cancel-btn` style for cancel button
+- Added `.edit-btn` style for edit button in the table
+
+## How It Works Now:
+
+### Adding a New Asset:
+1. Click "+ Add New Asset"
+2. Enter symbol (e.g., AAPL)
+3. When you leave the symbol field, it checks if the asset already exists
+4. If it doesn't exist, you can add it
+5. Click "Add Asset"
+
+### Adding More Shares of an Existing Asset:
+1. Click "+ Add New Asset"
+2. Enter the same symbol (e.g., AAPL if you already have it)
+3. The form detects the asset exists and shows "Update Quantity" mode
+4. Update the quantity and buy price as needed
+5. Click "Update Quantity"
+6. Your total quantity for that asset increases
+
+### Editing an Asset:
+1. Click the "Edit" button next to the asset in the table
+2. The form opens with the asset's current values
+3. Modify the values as needed (symbol field is disabled)
+4. Click "Update Asset"
+
+### Deleting an Asset:
+1. Click the "Delete" button next to the asset
+2. Confirm the deletion
+
+## Testing the Feature:
+
+1. **Add AAPL**: 10 shares @ $150
+2. **Try to add AAPL again**: 5 shares @ $160
+   - Should show "Update Quantity" mode
+   - Click "Update Quantity"
+   - Total should now be 15 shares
+3. **Edit AAPL**: Click Edit, change quantity to 20, click Update
+   - Should now show 20 shares
+4. **Delete AAPL**: Click Delete to remove it
+
+## Backend Rebuild Required:
+
+```bash
+cd PortfolioManager
+mvn clean install
+mvn spring-boot:run
+```
+
+The backend will now support:
+- ✅ Preventing duplicate symbol errors
+- ✅ Updating asset quantities and prices
+- ✅ Full CRUD operations with edit capability

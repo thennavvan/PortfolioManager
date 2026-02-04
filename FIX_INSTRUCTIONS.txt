@@ -1,0 +1,46 @@
+# Fix Instructions
+
+## To fix the three issues, follow these steps:
+
+### Step 1: Start the Python Yahoo Finance Service
+Open a terminal and run:
+```bash
+cd c:\Users\Administrator\PortfolioManager\YahooLivePrice
+python app.py
+```
+Wait until you see: "Starting Yahoo Finance price service on port 8000"
+
+### Step 2: Rebuild and Restart the Spring Boot Backend
+Open another terminal and run:
+```bash
+cd c:\Users\Administrator\PortfolioManager\PortfolioManager
+mvn clean install
+mvn spring-boot:run
+```
+Wait until you see: "Started PortfolioManagerApplication"
+
+### Step 3: Refresh the Frontend
+Go to http://localhost:3000 and refresh the page (F5 or Ctrl+R)
+
+## What was fixed:
+
+1. **Asset 400 Error Fixed**: 
+   - Added `name` field to the POST request (was missing from frontend)
+   - The backend requires both `symbol` and `name` fields
+
+2. **Live Price N/A Fixed**: 
+   - Updated PriceResponse DTO to have a no-arg constructor for JSON deserialization
+   - Added setter methods for proper JSON mapping
+   - Updated frontend to use `price` instead of `currentPrice`
+   - Improved Python app error handling and response format
+
+3. **Dashboard 0 Values**: 
+   - This will show data once you add at least one asset
+   - The Python service must be running for price fetching to work
+   - Try adding AAPL or MSFT as a test asset
+
+## Testing:
+1. Add an asset: AAPL, Stock, Qty: 10, Price: 150
+2. Go to Holdings - should show your asset with live price
+3. Go to Live Prices - search for AAPL or MSFT
+4. Go to Dashboard - should show totals and allocation chart
