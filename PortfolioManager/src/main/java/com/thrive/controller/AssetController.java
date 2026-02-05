@@ -63,14 +63,6 @@ public class AssetController {
         return ResponseEntity.noContent().build();
     }
 
-    // UPDATE asset by ID
-    @PutMapping("/{id}")
-    public ResponseEntity<Asset> updateAsset(@PathVariable Long id, @Valid @RequestBody Asset asset) {
-        return assetService.updateAsset(id, asset)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
     @GetMapping("/summary")
     public ResponseEntity<PortfolioSummary> getPortfolioSummary() {
         return ResponseEntity.ok(assetService.getPortfolioSummary());
