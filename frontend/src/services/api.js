@@ -59,6 +59,11 @@ export const searchAssets = (query) => {
   return axios.get(priceServiceUrl, { params: { q: query } });
 };
 
+export const getAIInsights = (portfolioData) => {
+  const priceServiceUrl = 'http://localhost:8000/insights';
+  return axios.post(priceServiceUrl, portfolioData);
+};
+
 // ==================== PORTFOLIO ====================
 
 export const getPortfolioSummary = () => {

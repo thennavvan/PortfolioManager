@@ -420,6 +420,38 @@
   color: var(--text);
 }
 
+.modal-chart-header .chart-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--surface-light);
+  padding: 4px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.modal-chart-header .toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-chart-header .toggle-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.modal-chart-header .toggle-btn.active {
+  background: var(--accent-blue);
+  color: #000000;
+}
+
 .modal-chart {
   background: var(--surface-light);
   border-radius: 8px;
