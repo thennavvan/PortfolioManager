@@ -1,5 +1,5 @@
 {
-  "name": "portfolio-manager-frontend",
+  "name": "finsight-frontend",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -8,9 +8,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.6.0",
+    "jspdf": "^4.1.0",
+    "jspdf-autotable": "^5.0.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "axios": "^1.6.0",
     "recharts": "^2.10.0"
   },
   "devDependencies": {

@@ -27,8 +27,8 @@
 
 .holdings-table thead,
 .assets-table thead {
-  background: var(--primary);
-  color: white;
+  background: var(--accent-blue);
+  color: #000000;
   border-bottom: none;
 }
 
@@ -66,34 +66,34 @@
 
 .symbol {
   font-weight: 600;
-  color: var(--primary);
+  color: var(--accent-blue);
 }
 
 .number {
   text-align: right;
-  font-family: 'Courier New', monospace;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .currency {
   text-align: right;
-  font-family: 'Courier New', monospace;
+  font-family: Arial, Helvetica, sans-serif;
   font-weight: 500;
 }
 
 .currency.positive {
-  color: var(--success);
+  color: var(--accent-green);
 }
 
 .currency.negative {
-  color: #ef4444;
+  color: var(--accent-red);
 }
 
 .number.positive {
-  color: #10b981;
+  color: var(--accent-green);
 }
 
 .number.negative {
-  color: #ef4444;
+  color: var(--accent-red);
 }
 
 .no-data {
