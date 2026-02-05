@@ -59,11 +59,6 @@ export const searchAssets = (query) => {
   return axios.get(priceServiceUrl, { params: { q: query } });
 };
 
-export const getAIInsights = (portfolioData) => {
-  const priceServiceUrl = 'http://localhost:8000/insights';
-  return axios.post(priceServiceUrl, portfolioData);
-};
-
 // ==================== PORTFOLIO ====================
 
 export const getPortfolioSummary = () => {
@@ -92,6 +87,20 @@ export const getPortfolioHistory = (days = 30) => {
 
 export const getAllPortfolioHistory = () => {
   return apiClient.get('/portfolio/history/all');
+};
+
+// ==================== RISK ANALYSIS ====================
+
+export const getPortfolioRiskAnalysis = (holdings) => {
+  const priceServiceUrl = 'http://localhost:8000/risk-analysis';
+  return axios.post(priceServiceUrl, { holdings });
+};
+
+// ==================== ASSET INFO ====================
+
+export const getAssetInfo = (symbol) => {
+  const priceServiceUrl = 'http://localhost:8000/asset-info';
+  return axios.get(`${priceServiceUrl}/${symbol}`);
 };
 
 export default apiClient;

@@ -3,9 +3,198 @@ from flask_cors import CORS
 import yfinance as yf
 from datetime import datetime
 import requests
+import numpy as np
 
 app = Flask(__name__)
 CORS(app)
+
+
+@app.route("/risk-analysis", methods=["POST"])
+def analyze_portfolio_risk():
+    """Calculate portfolio risk score based on diversification, volatility, and concentration"""
+    try:
+        data = request.json
+        holdings = data.get('holdings', [])
+        
+        if not holdings:
+            return jsonify({
+                "overallScore": 0,
+                "riskLevel": "Unknown",
+                "factors": [],
+                "message": "No holdings to analyze"
+            }), 200
+        
+        # Calculate risk factors
+        factors = []
+        total_value = sum(h.get('currentValue', 0) for h in holdings)
+        
+        # 1. Diversification Score (number of holdings)
+        num_holdings = len(holdings)
+        if num_holdings >= 15:
+            diversification_score = 100
+            diversification_status = "Excellent"
+        elif num_holdings >= 10:
+            diversification_score = 80
+            diversification_status = "Good"
+        elif num_holdings >= 5:
+            diversification_score = 60
+            diversification_status = "Moderate"
+        elif num_holdings >= 3:
+            diversification_score = 40
+            diversification_status = "Low"
+        else:
+            diversification_score = 20
+            diversification_status = "Poor"
+        
+        factors.append({
+            "name": "Diversification",
+            "score": diversification_score,
+            "status": diversification_status,
+            "description": f"{num_holdings} holdings in portfolio",
+            "icon": "📊"
+        })
+        
+        # 2. Concentration Risk (Herfindahl-Hirschman Index)
+        if total_value > 0:
+            weights = [(h.get('currentValue', 0) / total_value) * 100 for h in holdings]
+            hhi = sum(w ** 2 for w in weights)
+            max_weight = max(weights) if weights else 0
+            
+            # HHI: 10000 = single stock, ~0 = perfectly diversified
+            # Convert to 0-100 score (higher is better/less concentrated)
+            concentration_score = max(0, min(100, 100 - (hhi / 100)))
+            
+            if max_weight > 50:
+                concentration_status = "High Risk"
+                concentration_score = min(concentration_score, 30)
+            elif max_weight > 30:
+                concentration_status = "Elevated"
+                concentration_score = min(concentration_score, 50)
+            elif max_weight > 20:
+                concentration_status = "Moderate"
+            else:
+                concentration_status = "Well Balanced"
+            
+            top_holding = max(holdings, key=lambda h: h.get('currentValue', 0))
+            factors.append({
+                "name": "Concentration",
+                "score": round(concentration_score),
+                "status": concentration_status,
+                "description": f"Largest position: {top_holding.get('symbol', 'N/A')} ({max_weight:.1f}%)",
+                "icon": "⚖️"
+            })
+        
+        # 3. Volatility Score (fetch historical volatility for each holding)
+        volatility_scores = []
+        for holding in holdings[:10]:  # Limit to first 10 for performance
+            symbol = holding.get('symbol', '')
+            try:
+                ticker = yf.Ticker(symbol)
+                hist = ticker.history(period="3mo")
+                if not hist.empty and len(hist) > 5:
+                    returns = hist['Close'].pct_change().dropna()
+                    volatility = returns.std() * np.sqrt(252) * 100  # Annualized volatility %
+                    weight = holding.get('currentValue', 0) / total_value if total_value > 0 else 0
+                    volatility_scores.append({
+                        'symbol': symbol,
+                        'volatility': volatility,
+                        'weight': weight
+                    })
+            except:
+                pass
+        
+        if volatility_scores:
+            # Portfolio weighted volatility
+            weighted_vol = sum(v['volatility'] * v['weight'] for v in volatility_scores)
+            
+            # Convert volatility to score (lower volatility = higher score)
+            if weighted_vol < 15:
+                volatility_score = 90
+                volatility_status = "Low"
+            elif weighted_vol < 25:
+                volatility_score = 70
+                volatility_status = "Moderate"
+            elif weighted_vol < 40:
+                volatility_score = 50
+                volatility_status = "Elevated"
+            elif weighted_vol < 60:
+                volatility_score = 30
+                volatility_status = "High"
+            else:
+                volatility_score = 15
+                volatility_status = "Very High"
+            
+            factors.append({
+                "name": "Volatility",
+                "score": round(volatility_score),
+                "status": volatility_status,
+                "description": f"Annualized volatility: {weighted_vol:.1f}%",
+                "icon": "📈"
+            })
+        
+        # 4. Asset Type Diversity
+        asset_types = set(h.get('assetType', 'UNKNOWN') for h in holdings)
+        num_asset_types = len(asset_types)
+        
+        if num_asset_types >= 4:
+            asset_type_score = 100
+            asset_type_status = "Excellent"
+        elif num_asset_types >= 3:
+            asset_type_score = 75
+            asset_type_status = "Good"
+        elif num_asset_types >= 2:
+            asset_type_score = 50
+            asset_type_status = "Limited"
+        else:
+            asset_type_score = 25
+            asset_type_status = "Single Type"
+        
+        factors.append({
+            "name": "Asset Types",
+            "score": asset_type_score,
+            "status": asset_type_status,
+            "description": f"{num_asset_types} asset type(s): {', '.join(asset_types)}",
+            "icon": "🏦"
+        })
+        
+        # Calculate overall score (weighted average)
+        if factors:
+            weights = [0.25, 0.30, 0.25, 0.20]  # Diversification, Concentration, Volatility, Asset Types
+            scores = [f['score'] for f in factors]
+            # Pad with 50 if we don't have all factors
+            while len(scores) < 4:
+                scores.append(50)
+            overall_score = sum(s * w for s, w in zip(scores, weights))
+        else:
+            overall_score = 50
+        
+        # Determine risk level
+        if overall_score >= 80:
+            risk_level = "Low Risk"
+            risk_color = "#10B981"  # Green
+        elif overall_score >= 60:
+            risk_level = "Moderate Risk"
+            risk_color = "#3B82F6"  # Blue
+        elif overall_score >= 40:
+            risk_level = "Elevated Risk"
+            risk_color = "#F59E0B"  # Orange
+        else:
+            risk_level = "High Risk"
+            risk_color = "#EF4444"  # Red
+        
+        return jsonify({
+            "overallScore": round(overall_score),
+            "riskLevel": risk_level,
+            "riskColor": risk_color,
+            "factors": factors,
+            "holdingsAnalyzed": len(holdings)
+        }), 200
+        
+    except Exception as e:
+        print(f"Error analyzing risk: {str(e)}")
+        return jsonify({
+            "error": f"Failed to analyze risk: {str(e)}"
+        }), 500
 
 
 @app.route("/search", methods=["GET"])
@@ -78,6 +267,69 @@ def get_price(symbol):
         print(f"Error fetching price for {symbol}: {str(e)}")
         return jsonify({
             "error": "Price service unavailable",
+            "details": str(e),
+            "symbol": symbol.upper()
+        }), 503
+
+
+@app.route("/asset-info/<symbol>", methods=["GET"])
+def get_asset_info(symbol):
+    """Get asset information including type, name, and current price"""
+    try:
+        ticker = yf.Ticker(symbol)
+        info = ticker.info
+        data = ticker.history(period="1d")
+        
+        if data.empty and not info:
+            return jsonify({
+                "error": "Symbol not found",
+                "symbol": symbol.upper()
+            }), 404
+        
+        # Get quote type and map to our asset types
+        quote_type = info.get('quoteType', 'EQUITY')
+        
+        # Map Yahoo Finance types to our app's types
+        type_mapping = {
+            'EQUITY': 'STOCK',
+            'ETF': 'ETF',
+            'MUTUALFUND': 'MUTUAL_FUND',
+            'CRYPTOCURRENCY': 'CRYPTO',
+            'CURRENCY': 'CRYPTO',  # Crypto pairs like BTC-USD
+            'INDEX': 'ETF',
+            'FUTURE': 'STOCK',
+        }
+        
+        # Check if it's a crypto symbol (ends with -USD, -EUR, etc.)
+        if '-' in symbol.upper() and any(symbol.upper().endswith(curr) for curr in ['-USD', '-EUR', '-GBP', '-JPY', '-USDT']):
+            asset_type = 'CRYPTO'
+        else:
+            asset_type = type_mapping.get(quote_type, 'STOCK')
+        
+        # Get price
+        price = None
+        if not data.empty:
+            price = round(float(data["Close"].iloc[-1]), 2)
+        
+        # Get name
+        name = info.get('shortName') or info.get('longName') or symbol.upper()
+        
+        return jsonify({
+            "symbol": symbol.upper(),
+            "name": name,
+            "assetType": asset_type,
+            "quoteType": quote_type,
+            "price": price,
+            "currency": info.get('currency', 'USD'),
+            "exchange": info.get('exchange', ''),
+            "sector": info.get('sector', ''),
+            "industry": info.get('industry', '')
+        }), 200
+        
+    except Exception as e:
+        print(f"Error fetching asset info for {symbol}: {str(e)}")
+        return jsonify({
+            "error": "Asset info unavailable",
             "details": str(e),
             "symbol": symbol.upper()
         }), 503

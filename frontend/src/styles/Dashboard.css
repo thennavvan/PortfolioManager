@@ -88,6 +88,141 @@
   box-shadow: 0 4px 6px -1px rgba(91, 163, 217, 0.3);
 }
 
+/* Risk Score Section */
+.risk-section {
+  background: var(--surface);
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  margin-bottom: 2rem;
+}
+
+.risk-section h2 {
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.risk-loading {
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 2rem;
+}
+
+.risk-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.risk-score-circle {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 6px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-light);
+}
+
+.risk-score-value {
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.risk-score-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.risk-level {
+  font-size: 18px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.risk-factors {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.risk-factor {
+  background: var(--surface-light);
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+}
+
+.factor-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.factor-icon {
+  font-size: 18px;
+}
+
+.factor-name {
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+
+.factor-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.factor-status.good {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10B981;
+}
+
+.factor-status.moderate {
+  background: rgba(245, 158, 11, 0.2);
+  color: #F59E0B;
+}
+
+.factor-status.poor {
+  background: rgba(239, 68, 68, 0.2);
+  color: #EF4444;
+}
+
+.factor-bar-container {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.factor-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.factor-description {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
 @media (max-width: 768px) {
   .summary-cards {
     grid-template-columns: 1fr;
@@ -99,5 +234,14 @@
 
   .card .value {
     font-size: 24px;
+  }
+  
+  .risk-score-circle {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .risk-score-value {
+    font-size: 32px;
   }
 }
