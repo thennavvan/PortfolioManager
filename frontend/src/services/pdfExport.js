@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { getPortfolioSummary, getPortfolioHoldings, getPortfolioAllocation, getAssets, getAllPortfolioHistory } from './api';
+import { getPortfolioSummary, getPortfolioHoldings, getPortfolioAllocation, getAssets, getAllPortfolioHistory, getPortfolioRiskAnalysis } from './api';
 
 // Colors for pie chart segments
 const CHART_COLORS = [
@@ -181,6 +181,17 @@ export const exportPortfolioPDF = async () => {
     const assets = assetsRes.data || [];
     const historyData = historyRes.data || [];
 
+    // Fetch risk analysis after we have holdings
+    let riskData = null;
+    if (holdings.length > 0) {
+      try {
+        const riskRes = await getPortfolioRiskAnalysis(holdings);
+        riskData = riskRes.data;
+      } catch (err) {
+        console.error('Error fetching risk analysis:', err);
+      }
+    }
+
     // Create PDF document
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -250,6 +261,78 @@ export const exportPortfolioPDF = async () => {
     });
 
     yPosition = doc.lastAutoTable.finalY + 15;
+
+    // ==================== RISK ANALYSIS ====================
+    if (riskData && riskData.factors) {
+      addSectionHeader('Portfolio Risk Analysis');
+
+      // Risk Score Circle (simplified as a badge in PDF)
+      const scoreColor = riskData.overallScore >= 70 ? [16, 185, 129] : 
+                         riskData.overallScore >= 40 ? [245, 158, 11] : [239, 68, 68];
+      
+      // Draw risk score box
+      doc.setFillColor(scoreColor[0], scoreColor[1], scoreColor[2]);
+      doc.roundedRect(14, yPosition, 35, 20, 3, 3, 'F');
+      
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(255, 255, 255);
+      doc.text(`${riskData.overallScore}`, 31.5, yPosition + 13, { align: 'center' });
+      
+      // Risk level label
+      doc.setFontSize(12);
+      doc.setTextColor(scoreColor[0], scoreColor[1], scoreColor[2]);
+      doc.text(riskData.riskLevel || 'Unknown', 55, yPosition + 13);
+      
+      yPosition += 28;
+
+      // Risk factors table
+      const riskFactorsData = riskData.factors.map(factor => [
+        factor.name,
+        `${factor.score}/100`,
+        factor.status || '',
+        factor.description || ''
+      ]);
+
+      autoTable(doc, {
+        startY: yPosition,
+        head: [['Factor', 'Score', 'Status', 'Details']],
+        body: riskFactorsData,
+        theme: 'striped',
+        headStyles: {
+          fillColor: [59, 130, 246],
+          textColor: 255,
+          fontStyle: 'bold',
+          fontSize: 9
+        },
+        styles: {
+          fontSize: 9,
+          cellPadding: 4
+        },
+        columnStyles: {
+          0: { fontStyle: 'bold', cellWidth: 35 },
+          1: { halign: 'center', cellWidth: 20 },
+          2: { halign: 'center', cellWidth: 30 },
+          3: { cellWidth: 85 }
+        },
+        margin: { left: 14, right: 14 },
+        didParseCell: function(data) {
+          // Color status column based on score
+          if (data.section === 'body' && data.column.index === 1) {
+            const score = riskData.factors[data.row.index]?.score || 0;
+            if (score >= 70) {
+              data.cell.styles.textColor = [16, 185, 129]; // Green
+            } else if (score >= 40) {
+              data.cell.styles.textColor = [245, 158, 11]; // Amber
+            } else {
+              data.cell.styles.textColor = [239, 68, 68]; // Red
+            }
+          }
+        }
+      });
+
+      yPosition = doc.lastAutoTable.finalY + 15;
+    }
 
     // ==================== ASSET ALLOCATION WITH PIE CHART ====================
     if (allocation.length > 0) {
