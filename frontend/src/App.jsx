@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard.jsx';
 import Holdings from './pages/Holdings.jsx';
 import AssetManagement from './pages/AssetManagement.jsx';
 import Performance from './pages/Performance.jsx';
+import WhatIfSimulator from './pages/WhatIfSimulator.jsx';
 import './styles/App.css';
 
 function App() {
@@ -19,6 +20,8 @@ function App() {
         return <Holdings />;
       case 'assets':
         return <AssetManagement />;
+      case 'simulator':
+        return <WhatIfSimulator />;
       case 'performance':
         return <Performance />;
       default:

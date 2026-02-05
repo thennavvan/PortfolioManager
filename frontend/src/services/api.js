@@ -108,4 +108,11 @@ export const getSimilarStocks = (symbol) => {
   return axios.get(`${priceServiceUrl}/${symbol}`);
 };
 
+// ==================== WHAT-IF SIMULATOR ====================
+
+export const simulatePortfolio = (currentHoldings, simulatedChanges) => {
+  const priceServiceUrl = 'http://localhost:8000/simulate-portfolio';
+  return axios.post(priceServiceUrl, { currentHoldings, simulatedChanges });
+};
+
 export default apiClient;

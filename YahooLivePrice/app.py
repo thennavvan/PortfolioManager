@@ -561,6 +561,202 @@ def get_price_history(symbol):
         }), 503
 
 
+@app.route("/simulate-portfolio", methods=["POST"])
+def simulate_portfolio():
+    """Simulate portfolio changes and return impact analysis"""
+    try:
+        data = request.json
+        current_holdings = data.get('currentHoldings', [])
+        simulated_changes = data.get('simulatedChanges', [])
+        
+        if not current_holdings and not simulated_changes:
+            return jsonify({"error": "No data to simulate"}), 400
+        
+        # Build current portfolio state
+        portfolio = {}
+        for h in current_holdings:
+            symbol = h.get('symbol', '').upper()
+            if symbol:
+                portfolio[symbol] = {
+                    'symbol': symbol,
+                    'name': h.get('name', symbol),
+                    'quantity': h.get('quantity', 0),
+                    'buyPrice': h.get('buyPrice', 0),
+                    'currentPrice': h.get('currentPrice', 0),
+                    'currentValue': h.get('currentValue', 0),
+                    'assetType': h.get('assetType', 'STOCK')
+                }
+        
+        # Calculate current metrics
+        current_total_value = sum(p['currentValue'] for p in portfolio.values())
+        current_holdings_count = len(portfolio)
+        current_asset_types = set(p['assetType'] for p in portfolio.values())
+        
+        # Calculate current concentration (top holding %)
+        current_top_holding_pct = 0
+        if current_total_value > 0:
+            max_value = max((p['currentValue'] for p in portfolio.values()), default=0)
+            current_top_holding_pct = (max_value / current_total_value) * 100
+        
+        # Apply simulated changes to create new portfolio
+        simulated_portfolio = {k: v.copy() for k, v in portfolio.items()}
+        
+        for change in simulated_changes:
+            symbol = change.get('symbol', '').upper()
+            action = change.get('action', 'BUY')
+            quantity = change.get('quantity', 0)
+            price = change.get('price', 0)
+            
+            if not symbol or quantity <= 0:
+                continue
+            
+            if action == 'BUY':
+                if symbol in simulated_portfolio:
+                    # Add to existing
+                    existing = simulated_portfolio[symbol]
+                    old_qty = existing['quantity']
+                    old_price = existing['buyPrice']
+                    new_qty = old_qty + quantity
+                    # Weighted average price
+                    weighted_price = ((old_qty * old_price) + (quantity * price)) / new_qty if new_qty > 0 else price
+                    existing['quantity'] = new_qty
+                    existing['buyPrice'] = weighted_price
+                    existing['currentPrice'] = price
+                    existing['currentValue'] = new_qty * price
+                else:
+                    # New asset
+                    simulated_portfolio[symbol] = {
+                        'symbol': symbol,
+                        'name': change.get('name', symbol),
+                        'quantity': quantity,
+                        'buyPrice': price,
+                        'currentPrice': price,
+                        'currentValue': quantity * price,
+                        'assetType': change.get('assetType', 'STOCK')
+                    }
+            elif action == 'SELL':
+                if symbol in simulated_portfolio:
+                    existing = simulated_portfolio[symbol]
+                    new_qty = existing['quantity'] - quantity
+                    if new_qty <= 0:
+                        del simulated_portfolio[symbol]
+                    else:
+                        existing['quantity'] = new_qty
+                        existing['currentValue'] = new_qty * existing['currentPrice']
+        
+        # Calculate simulated metrics
+        sim_total_value = sum(p['currentValue'] for p in simulated_portfolio.values())
+        sim_holdings_count = len(simulated_portfolio)
+        sim_asset_types = set(p['assetType'] for p in simulated_portfolio.values())
+        
+        # Calculate simulated concentration
+        sim_top_holding_pct = 0
+        sim_top_holding = None
+        if sim_total_value > 0:
+            for p in simulated_portfolio.values():
+                pct = (p['currentValue'] / sim_total_value) * 100
+                if pct > sim_top_holding_pct:
+                    sim_top_holding_pct = pct
+                    sim_top_holding = p['symbol']
+        
+        # Calculate risk scores (simplified version)
+        def calculate_risk_score(holdings_count, top_pct, asset_type_count):
+            # Lower is better for concentration
+            concentration_risk = min(top_pct, 50)  # Cap at 50
+            # More holdings = lower risk
+            diversification_bonus = min(holdings_count * 3, 30)
+            # More asset types = lower risk
+            type_bonus = min(asset_type_count * 5, 20)
+            
+            # Base risk starts at 50
+            risk = 50 + concentration_risk - diversification_bonus - type_bonus
+            return max(0, min(100, risk))
+        
+        current_risk = calculate_risk_score(current_holdings_count, current_top_holding_pct, len(current_asset_types))
+        sim_risk = calculate_risk_score(sim_holdings_count, sim_top_holding_pct, len(sim_asset_types))
+        
+        def get_risk_level(score):
+            if score <= 30:
+                return "Low"
+            elif score <= 50:
+                return "Medium"
+            elif score <= 70:
+                return "High"
+            else:
+                return "Very High"
+        
+        # Calculate allocation by asset type
+        def calc_allocation(holdings):
+            allocation = {}
+            total = sum(p['currentValue'] for p in holdings.values())
+            if total == 0:
+                return allocation
+            for p in holdings.values():
+                asset_type = p['assetType']
+                if asset_type not in allocation:
+                    allocation[asset_type] = 0
+                allocation[asset_type] += (p['currentValue'] / total) * 100
+            return allocation
+        
+        current_allocation = calc_allocation(portfolio)
+        sim_allocation = calc_allocation(simulated_portfolio)
+        
+        # Build insights
+        insights = []
+        value_change = sim_total_value - current_total_value
+        risk_change = sim_risk - current_risk
+        
+        if value_change > 0:
+            insights.append(f"Portfolio value increases by ${value_change:,.2f}")
+        elif value_change < 0:
+            insights.append(f"Portfolio value decreases by ${abs(value_change):,.2f}")
+        
+        if risk_change > 5:
+            insights.append(f"Risk increases by {risk_change:.0f} points - consider diversifying")
+        elif risk_change < -5:
+            insights.append(f"Risk decreases by {abs(risk_change):.0f} points - better diversification")
+        
+        if sim_holdings_count > current_holdings_count:
+            insights.append(f"Adding {sim_holdings_count - current_holdings_count} new holding(s)")
+        elif sim_holdings_count < current_holdings_count:
+            insights.append(f"Removing {current_holdings_count - sim_holdings_count} holding(s)")
+        
+        if sim_top_holding_pct > 30:
+            insights.append(f"Warning: {sim_top_holding} would be {sim_top_holding_pct:.1f}% of portfolio")
+        
+        return jsonify({
+            "current": {
+                "totalValue": current_total_value,
+                "holdingsCount": current_holdings_count,
+                "assetTypes": len(current_asset_types),
+                "topHoldingPercent": round(current_top_holding_pct, 1),
+                "riskScore": round(current_risk),
+                "riskLevel": get_risk_level(current_risk),
+                "allocation": current_allocation
+            },
+            "simulated": {
+                "totalValue": sim_total_value,
+                "holdingsCount": sim_holdings_count,
+                "assetTypes": len(sim_asset_types),
+                "topHoldingPercent": round(sim_top_holding_pct, 1),
+                "riskScore": round(sim_risk),
+                "riskLevel": get_risk_level(sim_risk),
+                "allocation": sim_allocation,
+                "holdings": list(simulated_portfolio.values())
+            },
+            "changes": {
+                "valueChange": round(value_change, 2),
+                "riskChange": round(risk_change),
+                "holdingsChange": sim_holdings_count - current_holdings_count
+            },
+            "insights": insights
+        })
+        
+    except Exception as e:
+        print(f"Error simulating portfolio: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
     print("Starting Yahoo Finance price service on port 8000")
     app.run(host="0.0.0.0", port=8000, debug=False)

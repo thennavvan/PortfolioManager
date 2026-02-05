@@ -17,7 +17,7 @@ const AddAssetForm = ({ onSubmit, editingAsset, onCancel }) => {
   const [symbolValidation, setSymbolValidation] = useState(null);
   const [assetName, setAssetName] = useState('');
 
-  // If editing, populate the form
+  // If editing, populate the form and mark as pre-validated
   useEffect(() => {
     if (editingAsset) {
       setFormData({
@@ -27,6 +27,12 @@ const AddAssetForm = ({ onSubmit, editingAsset, onCancel }) => {
         buyPrice: editingAsset.buyPrice.toString()
       });
       setExistingAsset(editingAsset);
+      setAssetName(editingAsset.name || editingAsset.symbol);
+      // Mark existing asset as pre-validated
+      setSymbolValidation({
+        valid: true,
+        message: `✓ ${editingAsset.name || editingAsset.symbol} (${editingAsset.assetType})`
+      });
     }
   }, [editingAsset]);
 
@@ -47,8 +53,13 @@ const AddAssetForm = ({ onSubmit, editingAsset, onCancel }) => {
 
   // Check if symbol already exists and validate ticker when user leaves the symbol field
   const handleSymbolBlur = async () => {
-    if (!formData.symbol.trim() || editingAsset) {
-      return; // Don't check if editing or empty
+    if (!formData.symbol.trim()) {
+      return; // Don't check if empty
+    }
+    
+    // If editing and symbol hasn't changed, skip validation
+    if (editingAsset && formData.symbol.toUpperCase() === editingAsset.symbol.toUpperCase()) {
+      return;
     }
 
     const symbol = formData.symbol.toUpperCase();
@@ -147,14 +158,18 @@ const AddAssetForm = ({ onSubmit, editingAsset, onCancel }) => {
 
     try {
       setLoading(true);
+      // When editingAsset is provided (from Edit button), we want to REPLACE values
+      // When existingAsset is found (symbol already exists), we want to ADD to existing
+      const isAddingToExisting = !!existingAsset && !editingAsset;
+      
       await onSubmit({
-        name: formData.symbol.toUpperCase(),
+        name: assetName || formData.symbol.toUpperCase(),
         symbol: formData.symbol.toUpperCase(),
         assetType: formData.assetType,
         quantity: parseFloat(formData.quantity),
         buyPrice: parseFloat(formData.buyPrice),
-        isUpdate: !!existingAsset,
-        existingAssetId: existingAsset?.id
+        isUpdate: isAddingToExisting,
+        existingAssetId: isAddingToExisting ? existingAsset?.id : null
       });
       
       // Reset form
