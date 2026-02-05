@@ -12,7 +12,8 @@ def get_price(symbol):
 
         if data.empty:
             return jsonify({
-                "error": "Symbol not found"
+                "error": "Symbol not found",
+                "symbol": symbol.upper()
             }), 404
 
         price = round(float(data["Close"].iloc[-1]), 2)
@@ -22,15 +23,22 @@ def get_price(symbol):
             "price": price,
             "currency": "USD",
             "timestamp": datetime.utcnow().isoformat()
-        })
+        }), 200
 
     except Exception as e:
+        print(f"Error fetching price for {symbol}: {str(e)}")
         return jsonify({
             "error": "Price service unavailable",
-            "details": str(e)
+            "details": str(e),
+            "symbol": symbol.upper()
         }), 503
+
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"}), 200
 
 
 if __name__ == "__main__":
     print("Starting Yahoo Finance price service on port 8000")
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    app.run(host="0.0.0.0", port=8000, debug=False)

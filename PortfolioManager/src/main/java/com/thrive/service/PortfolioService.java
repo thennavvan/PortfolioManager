@@ -2,9 +2,12 @@ package com.thrive.service;
 
 import com.thrive.dto.*;
 import com.thrive.entity.Asset;
+import com.thrive.entity.PortfolioSnapshot;
 import com.thrive.repo.AssetRepo;
+import com.thrive.repo.PortfolioSnapshotRepo;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.*;
 
@@ -12,11 +15,14 @@ import java.util.*;
 public class PortfolioService {
 
     private final AssetRepo assetRepo;
+    private final PortfolioSnapshotRepo snapshotRepo;
     private final MarketPriceService marketPriceService;
 
     public PortfolioService(AssetRepo assetRepo,
+                            PortfolioSnapshotRepo snapshotRepo,
                             MarketPriceService marketPriceService) {
         this.assetRepo = assetRepo;
+        this.snapshotRepo = snapshotRepo;
         this.marketPriceService = marketPriceService;
     }
 
@@ -25,22 +31,40 @@ public class PortfolioService {
         List<Asset> assets = assetRepo.findAll();
         List<PortfolioAssetSummary> summaries = new ArrayList<>();
 
-        Double totalValue = 0.0;
+        Double totalPortfolioValue = 0.0;
+        Double totalInvestedValue = 0.0;
 
         for (Asset asset : assets) {
+
             Double price = marketPriceService.getLivePrice(asset.getSymbol()).getPrice();
+
+            Double currentPrice = MarketPriceService.getLivePrice(asset.getSymbol()).getPrice();
+            Double marketValue = currentPrice * asset.getQuantity();
+            Double investedValue = asset.getQuantity() * asset.getBuyPrice();
+            
+
             PortfolioAssetSummary summary =
                     new PortfolioAssetSummary(
                             asset.getSymbol(),
                             asset.getQuantity(),
-                            price
+                            currentPrice
                     );
 
             summaries.add(summary);
-            totalValue += summary.getValue();
+            totalPortfolioValue += marketValue;
+            totalInvestedValue += investedValue;
         }
 
-        return new PortfolioSummaryResponse(summaries, totalValue);
+        Double profitLoss = totalPortfolioValue - totalInvestedValue;
+        Double profitLossPercent = totalInvestedValue == 0 ? 0 : (profitLoss / totalInvestedValue) * 100;
+
+        return new PortfolioSummaryResponse(
+                summaries, 
+                round(totalPortfolioValue),
+                round(totalInvestedValue),
+                round(profitLoss),
+                round(profitLossPercent)
+        );
     }
 
     public PortfolioAllocationResponse getAllocation() {
@@ -76,6 +100,46 @@ public class PortfolioService {
 
     private double round(double value) {
         return Math.round(value * 100.0) / 100.0;
+    }
+
+    public PortfolioSnapshot savePortfolioSnapshot() {
+        PortfolioSummaryResponse summary = getPortfolioSummary();
+        PortfolioSnapshot snapshot = new PortfolioSnapshot(
+                summary.getTotalPortfolioValue(),
+                summary.getTotalInvestedValue(),
+                LocalDateTime.now()
+        );
+        return snapshotRepo.save(snapshot);
+    }
+
+    public boolean shouldSaveSnapshot() {
+        PortfolioSnapshot lastSnapshot = snapshotRepo.findLatestSnapshot();
+        if (lastSnapshot == null) {
+            return true; // No snapshot exists, save one
+        }
+
+        LocalDateTime lastSnapshotTime = lastSnapshot.getSnapshotDate();
+        LocalDateTime today = LocalDateTime.now();
+        
+        // Check if last snapshot was today
+        return !lastSnapshotTime.toLocalDate().equals(today.toLocalDate());
+    }
+
+    public PortfolioSnapshot autoSaveSnapshotIfNeeded() {
+        if (shouldSaveSnapshot()) {
+            return savePortfolioSnapshot();
+        }
+        return null;
+    }
+
+    public List<PortfolioSnapshot> getPortfolioHistory(int days) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startDate = now.minusDays(days);
+        return snapshotRepo.findBySnapshotDateBetweenOrderBySnapshotDateAsc(startDate, now);
+    }
+
+    public List<PortfolioSnapshot> getAllPortfolioHistory() {
+        return snapshotRepo.findAll();
     }
 
     public List<HoldingDto> getHoldings() {

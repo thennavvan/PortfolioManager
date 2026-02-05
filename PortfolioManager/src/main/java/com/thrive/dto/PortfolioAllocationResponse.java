@@ -5,18 +5,29 @@ import java.util.List;
 public class PortfolioAllocationResponse {
 
     private double totalValue;
-    private List<PortfolioAllocationItem> allocation;
+    private List<PortfolioAllocationItem> allocations;
 
-    public PortfolioAllocationResponse(double totalValue, List<PortfolioAllocationItem> allocation) {
+    public PortfolioAllocationResponse() {
+    }
+
+    public PortfolioAllocationResponse(double totalValue, List<PortfolioAllocationItem> allocations) {
         this.totalValue = totalValue;
-        this.allocation = allocation;
+        this.allocations = allocations;
     }
 
     public double getTotalValue() {
         return totalValue;
     }
 
-    public List<PortfolioAllocationItem> getAllocation() {
-        return allocation;
+    public void setTotalValue(double totalValue) {
+        this.totalValue = totalValue;
+    }
+
+    public List<PortfolioAllocationItem> getAllocations() {
+        return allocations;
+    }
+
+    public void setAllocations(List<PortfolioAllocationItem> allocations) {
+        this.allocations = allocations;
     }
 }

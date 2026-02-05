@@ -4,18 +4,60 @@ import java.util.List;
 
 public class PortfolioSummaryResponse {
     private List<PortfolioAssetSummary> assets;
-    private Double totalValue;
+    private Double totalPortfolioValue;
+    private Double totalInvestedValue;
+    private Double profitLoss;
+    private Double profitLossPercent;
 
-    public PortfolioSummaryResponse(List<PortfolioAssetSummary> assets, Double totalValue) {
+    public PortfolioSummaryResponse() {
+    }
+
+    public PortfolioSummaryResponse(List<PortfolioAssetSummary> assets, Double totalPortfolioValue, 
+                                   Double totalInvestedValue, Double profitLoss, Double profitLossPercent) {
         this.assets = assets;
-        this.totalValue = totalValue;
+        this.totalPortfolioValue = totalPortfolioValue;
+        this.totalInvestedValue = totalInvestedValue;
+        this.profitLoss = profitLoss;
+        this.profitLossPercent = profitLossPercent;
     }
 
     public List<PortfolioAssetSummary> getAssets() {
         return assets;
     }
 
-    public Double getTotalValue() {
-        return totalValue;
+    public void setAssets(List<PortfolioAssetSummary> assets) {
+        this.assets = assets;
+    }
+
+    public Double getTotalPortfolioValue() {
+        return totalPortfolioValue;
+    }
+
+    public void setTotalPortfolioValue(Double totalPortfolioValue) {
+        this.totalPortfolioValue = totalPortfolioValue;
+    }
+
+    public Double getTotalInvestedValue() {
+        return totalInvestedValue;
+    }
+
+    public void setTotalInvestedValue(Double totalInvestedValue) {
+        this.totalInvestedValue = totalInvestedValue;
+    }
+
+    public Double getProfitLoss() {
+        return profitLoss;
+    }
+
+    public void setProfitLoss(Double profitLoss) {
+        this.profitLoss = profitLoss;
+    }
+
+    public Double getProfitLossPercent() {
+        return profitLossPercent;
+    }
+
+    public void setProfitLossPercent(Double profitLossPercent) {
+        this.profitLossPercent = profitLossPercent;
     }
 }

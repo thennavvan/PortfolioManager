@@ -9,3 +9,176 @@ GET http://localhost:8080/api/portfolio/summary
 GET http://localhost:8080/api/portfolio/holdings
 
 GET http://localhost:8080/api/portfolio/allocation
+
+GET http://localhost:8080/api/portfolio/holdings
+
+-------------------------------------
+
+now the springboot application 'PortfolioManager' has -
+
+com.thrive.enitity.Asset
+
+controller.AssetController
+controller.PortfolioController
+
+dto.Holdingdto
+dto.PortfolioAllocationItem
+dto.PortfolioAllocationResponse
+dto.PortfolioAssetSummary
+dto.PortfolioSummary
+dto.PortfolioSummaryResponse
+dto.PriceResponse
+
+exception.AssetException
+
+repo.AssetRepo
+
+service.AssetService
+service.MarketPriceService
+service.PortfolioService
+
+variables that will be used from backend to display on frontend(like profit loss, totalvalue ,etc) - 
+currentPrice
+investedValue
+marketValue
+profitLoss
+profitLossPercent
+
+
+
+the endpoints that i tested out and that worked in postman - 
+http://localhost:8080/api/assets
+http://localhost:8080/api/assets/summary
+http://localhost:8080/api/assets/price/AAPL
+http://localhost:8080/api/portfolio/summary
+http://localhost:8080/api/portfolio/holdings
+http://localhost:8080/api/portfolio/allocation
+http://localhost:8080/api/portfolio/holdings
+
+a python folder - YahooLivePrice which contains a flask python application app.py that uses yfinance to fetch live data (it runs on 8000)
+
+now i wanna create a frontend that incorporates all these backend features so that i can see how these all come together
+
+ i am gonna use copilot to generate the backend, so use whatever i have given here to generate the perfect prompt to give to copilot to generate the frontend
+
+the frontend should allow to add remove asset, view live stock price, dashboard, asset summary, portfolio summary, profit loss etc
+
+
+----------------------- 
+
+
+I am building a frontend for a Portfolio Management application.
+
+Backend details (DO NOT GUESS, USE EXACTLY THIS):
+
+Backend base URL: http://localhost:8080
+
+Entities & Concepts:
+- Asset: symbol, assetType, quantity, buyPrice
+- Live prices are fetched via backend (which internally calls a Python yfinance service)
+- Portfolio metrics are computed in backend (frontend only displays data)
+
+Important computed fields returned by backend:
+- currentPrice
+- investedValue
+- marketValue
+- profitLoss
+- profitLossPercent
+- totalPortfolioValue
+
+Available REST endpoints (ALL WORKING):
+
+ASSETS
+GET  /api/assets
+POST /api/assets
+DELETE /api/assets/{id}
+
+GET /api/assets/summary
+GET /api/assets/price/{symbol}
+
+PORTFOLIO
+GET /api/portfolio/summary
+GET /api/portfolio/holdings
+GET /api/portfolio/allocation
+
+DTOs returned by backend:
+- HoldingDto
+- PortfolioSummaryResponse
+- PortfolioAllocationResponse
+- PortfolioAssetSummary
+- PriceResponse
+
+Frontend Requirements:
+
+1. Use React (JavaScript only, NOT TypeScript)
+2. Use Vite or Create React App
+3. Use Axios for API calls
+4. Use functional components and React hooks
+5. Use clean folder structure:
+   - pages/
+   - components/
+   - services/
+6. No authentication
+7. Responsive dashboard-style UI
+8. Prefer simple CSS or Tailwind (no heavy UI frameworks)
+
+Pages to implement:
+
+1. Dashboard Page
+   - Displays:
+     - Total portfolio value
+     - Total profit/loss (absolute + %)
+     - Asset allocation chart (pie or donut)
+   - Uses:
+     - GET /api/portfolio/summary
+     - GET /api/portfolio/allocation
+
+2. Holdings Page
+   - Table view using GET /api/portfolio/holdings
+   - Columns:
+     - Symbol
+     - Asset Type
+     - Quantity
+     - Buy Price
+     - Current Price
+     - Market Value
+     - Profit/Loss
+     - Profit/Loss %
+   - Profit/Loss should be color coded (green for profit, red for loss)
+
+3. Assets Management Page
+   - List all assets (GET /api/assets)
+   - Add new asset (POST /api/assets)
+   - Delete asset (DELETE /api/assets/{id})
+
+4. Live Price Viewer
+   - Input box for stock symbol
+   - Fetch live price using:
+     GET /api/assets/price/{symbol}
+
+Architecture Requirements:
+
+- Create a centralized API service layer (services/api.js)
+- Do NOT use TypeScript or interfaces
+- Handle loading and error states properly
+- Do NOT mock data
+- Do NOT hardcode values
+- All data must come from backend APIs
+
+UI Expectations:
+
+- Simple professional finance dashboard look
+- Clean layout
+- Readable tables
+- Basic charts using chart.js or recharts
+- No animations required
+
+Generate:
+- Folder structure
+- API service layer
+- React pages and components
+- Axios configuration
+- Example CSS styles
+
+Do NOT generate backend code.
+Do NOT change backend endpoints.

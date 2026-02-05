@@ -14,12 +14,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.client.RestClient;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -39,6 +43,9 @@ class PortfolioServiceTest {
     private Asset etfAsset;
     private List<Asset> testAssets;
 
+    private final Map<String, PriceResponse> priceBySymbol = new HashMap<>();
+    private final AtomicReference<String> lastSymbol = new AtomicReference<>();
+
     @BeforeEach
     void setUp() {
         stockAsset = new Asset("Apple Inc.", "AAPL", Asset.AssetType.STOCK, 100.0, 150.0);
@@ -48,15 +55,54 @@ class PortfolioServiceTest {
         etfAsset = new Asset("S&P 500 ETF", "SPY", Asset.AssetType.ETF, 50.0, 400.0);
 
         testAssets = Arrays.asList(stockAsset, cryptoAsset, etfAsset);
+
+        priceBySymbol.clear();
+        stubLivePrice("AAPL", 170.0);
+        stubLivePrice("BTC", 35000.0);
+        stubLivePrice("SPY", 420.0);
+        stubLivePrice("MSFT", 300.0);
+        stubLivePrice("TST", 1.234567);
+    }
+
+    private void stubLivePrice(String symbol, double price) {
+        priceBySymbol.put(symbol, new PriceResponse(symbol, price, "USD"));
+    }
+
+    private void installMockRestClientForStaticMarketPriceService() {
+        try {
+            RestClient restClient = mock(RestClient.class);
+            @SuppressWarnings("rawtypes")
+            RestClient.RequestHeadersUriSpec uriSpec = mock(RestClient.RequestHeadersUriSpec.class);
+            @SuppressWarnings("rawtypes")
+            RestClient.RequestHeadersSpec headersSpec = mock(RestClient.RequestHeadersSpec.class);
+            RestClient.ResponseSpec responseSpec = mock(RestClient.ResponseSpec.class);
+
+            when(restClient.get()).thenReturn(uriSpec);
+            when(uriSpec.uri(eq("/price/{symbol}"), any(Object[].class))).thenAnswer(invocation -> {
+                Object raw = invocation.getArgument(1);
+                if (raw instanceof Object[] arr && arr.length > 0) {
+                    lastSymbol.set(String.valueOf(arr[0]));
+                } else {
+                    lastSymbol.set(String.valueOf(raw));
+                }
+                return headersSpec;
+            });
+            when(headersSpec.retrieve()).thenReturn(responseSpec);
+            when(responseSpec.body(eq(PriceResponse.class))).thenAnswer(invocation -> priceBySymbol.get(lastSymbol.get()));
+
+            Field field = MarketPriceService.class.getDeclaredField("restClient");
+            field.setAccessible(true);
+            field.set(null, restClient);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
     void getPortfolioSummary_ShouldReturnCorrectSummaryWithLivePrices() {
         // Given
         when(assetRepo.findAll()).thenReturn(testAssets);
-        when(marketPriceService.getLivePrice("AAPL")).thenReturn(new PriceResponse("AAPL", 170.0, "USD"));
-        when(marketPriceService.getLivePrice("BTC")).thenReturn(new PriceResponse("BTC", 35000.0, "USD"));
-        when(marketPriceService.getLivePrice("SPY")).thenReturn(new PriceResponse("SPY", 420.0, "USD"));
+        installMockRestClientForStaticMarketPriceService();
 
         // When
         PortfolioSummaryResponse result = portfolioService.getPortfolioSummary();
@@ -98,12 +144,9 @@ class PortfolioServiceTest {
         assertEquals(21000.0, spySummary.getValue());
 
         // Verify total value
-        assertEquals(17000.0 + 17500.0 + 21000.0, result.getTotalValue(), 0.001);
+        assertEquals(17000.0 + 17500.0 + 21000.0, result.getTotalPortfolioValue(), 0.001);
 
         verify(assetRepo, times(1)).findAll();
-        verify(marketPriceService, times(1)).getLivePrice("AAPL");
-        verify(marketPriceService, times(1)).getLivePrice("BTC");
-        verify(marketPriceService, times(1)).getLivePrice("SPY");
     }
 
     @Test
@@ -118,10 +161,9 @@ class PortfolioServiceTest {
         assertNotNull(result);
         assertNotNull(result.getAssets());
         assertTrue(result.getAssets().isEmpty());
-        assertEquals(0.0, result.getTotalValue(), 0.001);
+        assertEquals(0.0, result.getTotalPortfolioValue(), 0.001);
 
         verify(assetRepo, times(1)).findAll();
-        verify(marketPriceService, never()).getLivePrice(anyString());
     }
 
     @Test
@@ -129,7 +171,8 @@ class PortfolioServiceTest {
         // Given
         List<Asset> singleAsset = Arrays.asList(stockAsset);
         when(assetRepo.findAll()).thenReturn(singleAsset);
-        when(marketPriceService.getLivePrice("AAPL")).thenReturn(new PriceResponse("AAPL", 180.0, "USD"));
+        stubLivePrice("AAPL", 180.0);
+        installMockRestClientForStaticMarketPriceService();
 
         // When
         PortfolioSummaryResponse result = portfolioService.getPortfolioSummary();
@@ -137,7 +180,7 @@ class PortfolioServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(1, result.getAssets().size());
-        assertEquals(18000.0, result.getTotalValue(), 0.001);
+        assertEquals(18000.0, result.getTotalPortfolioValue(), 0.001);
 
         PortfolioAssetSummary summary = result.getAssets().get(0);
         assertEquals("AAPL", summary.getSymbol());
@@ -146,24 +189,21 @@ class PortfolioServiceTest {
         assertEquals(18000.0, summary.getValue());
 
         verify(assetRepo, times(1)).findAll();
-        verify(marketPriceService, times(1)).getLivePrice("AAPL");
     }
 
     @Test
     void getAllocation_ShouldReturnCorrectAllocationByAssetType() {
         // Given
         when(assetRepo.findAll()).thenReturn(testAssets);
-        when(marketPriceService.getLivePrice("AAPL")).thenReturn(new PriceResponse("AAPL", 170.0, "USD"));
-        when(marketPriceService.getLivePrice("BTC")).thenReturn(new PriceResponse("BTC", 35000.0, "USD"));
-        when(marketPriceService.getLivePrice("SPY")).thenReturn(new PriceResponse("SPY", 420.0, "USD"));
+        installMockRestClientForStaticMarketPriceService();
 
         // When
         PortfolioAllocationResponse result = portfolioService.getAllocation();
 
         // Then
         assertNotNull(result);
-        assertNotNull(result.getAllocation());
-        assertEquals(3, result.getAllocation().size());
+        assertNotNull(result.getAllocations());
+        assertEquals(3, result.getAllocations().size());
 
         // Calculate expected values
         double stockValue = 100.0 * 170.0; // 17000.0
@@ -174,7 +214,7 @@ class PortfolioServiceTest {
         assertEquals(totalValue, result.getTotalValue(), 0.001);
 
         // Verify allocation items
-        PortfolioAllocationItem stockAllocation = result.getAllocation().stream()
+        PortfolioAllocationItem stockAllocation = result.getAllocations().stream()
                 .filter(item -> "STOCK".equals(item.getAssetType()))
                 .findFirst()
                 .orElse(null);
@@ -183,7 +223,7 @@ class PortfolioServiceTest {
         assertEquals(stockValue, stockAllocation.getValue(), 0.001);
         assertEquals(Math.round((stockValue / totalValue) * 100 * 100.0) / 100.0, stockAllocation.getPercentage(), 0.001);
 
-        PortfolioAllocationItem cryptoAllocation = result.getAllocation().stream()
+        PortfolioAllocationItem cryptoAllocation = result.getAllocations().stream()
                 .filter(item -> "CRYPTO".equals(item.getAssetType()))
                 .findFirst()
                 .orElse(null);
@@ -192,7 +232,7 @@ class PortfolioServiceTest {
         assertEquals(cryptoValue, cryptoAllocation.getValue(), 0.001);
         assertEquals(Math.round((cryptoValue / totalValue) * 100 * 100.0) / 100.0, cryptoAllocation.getPercentage(), 0.001);
 
-        PortfolioAllocationItem etfAllocation = result.getAllocation().stream()
+        PortfolioAllocationItem etfAllocation = result.getAllocations().stream()
                 .filter(item -> "ETF".equals(item.getAssetType()))
                 .findFirst()
                 .orElse(null);
@@ -202,9 +242,6 @@ class PortfolioServiceTest {
         assertEquals(Math.round((etfValue / totalValue) * 100 * 100.0) / 100.0, etfAllocation.getPercentage(), 0.001);
 
         verify(assetRepo, times(1)).findAll();
-        verify(marketPriceService, times(1)).getLivePrice("AAPL");
-        verify(marketPriceService, times(1)).getLivePrice("BTC");
-        verify(marketPriceService, times(1)).getLivePrice("SPY");
     }
 
     @Test
@@ -217,12 +254,11 @@ class PortfolioServiceTest {
 
         // Then
         assertNotNull(result);
-        assertNotNull(result.getAllocation());
-        assertTrue(result.getAllocation().isEmpty());
+        assertNotNull(result.getAllocations());
+        assertTrue(result.getAllocations().isEmpty());
         assertEquals(0.0, result.getTotalValue(), 0.001);
 
         verify(assetRepo, times(1)).findAll();
-        verify(marketPriceService, never()).getLivePrice(anyString());
     }
 
     @Test
@@ -232,15 +268,14 @@ class PortfolioServiceTest {
         List<Asset> assetsWithSameType = Arrays.asList(stockAsset, stockAsset2);
         
         when(assetRepo.findAll()).thenReturn(assetsWithSameType);
-        when(marketPriceService.getLivePrice("AAPL")).thenReturn(new PriceResponse("AAPL", 170.0, "USD"));
-        when(marketPriceService.getLivePrice("MSFT")).thenReturn(new PriceResponse("MSFT", 300.0, "USD"));
+        installMockRestClientForStaticMarketPriceService();
 
         // When
         PortfolioAllocationResponse result = portfolioService.getAllocation();
 
         // Then
         assertNotNull(result);
-        assertEquals(1, result.getAllocation().size());
+        assertEquals(1, result.getAllocations().size());
 
         double stockValue1 = 100.0 * 170.0; // 17000.0
         double stockValue2 = 200.0 * 300.0; // 60000.0
@@ -248,14 +283,12 @@ class PortfolioServiceTest {
 
         assertEquals(totalValue, result.getTotalValue(), 0.001);
 
-        PortfolioAllocationItem stockAllocation = result.getAllocation().get(0);
+        PortfolioAllocationItem stockAllocation = result.getAllocations().get(0);
         assertEquals("STOCK", stockAllocation.getAssetType());
         assertEquals(totalValue, stockAllocation.getValue(), 0.001);
         assertEquals(100.0, stockAllocation.getPercentage(), 0.001);
 
         verify(assetRepo, times(1)).findAll();
-        verify(marketPriceService, times(1)).getLivePrice("AAPL");
-        verify(marketPriceService, times(1)).getLivePrice("MSFT");
     }
 
     @Test
@@ -263,22 +296,21 @@ class PortfolioServiceTest {
         // Given
         Asset assetWithFractionalValue = new Asset("Test", "TST", Asset.AssetType.STOCK, 1.0, 1.0);
         when(assetRepo.findAll()).thenReturn(Arrays.asList(assetWithFractionalValue));
-        when(marketPriceService.getLivePrice("TST")).thenReturn(new PriceResponse("TST", 1.234567, "USD"));
+        installMockRestClientForStaticMarketPriceService();
 
         // When
         PortfolioAllocationResponse result = portfolioService.getAllocation();
 
         // Then
         assertNotNull(result);
-        assertEquals(1, result.getAllocation().size());
+        assertEquals(1, result.getAllocations().size());
 
-        PortfolioAllocationItem allocation = result.getAllocation().get(0);
+        PortfolioAllocationItem allocation = result.getAllocations().get(0);
         assertEquals(1.23, allocation.getValue(), 0.001); // Should be rounded to 2 decimal places
         assertEquals(100.0, allocation.getPercentage(), 0.001); // Should be rounded to 2 decimal places
         assertEquals(1.23, result.getTotalValue(), 0.001); // Should be rounded to 2 decimal places
 
         verify(assetRepo, times(1)).findAll();
-        verify(marketPriceService, times(1)).getLivePrice("TST");
     }
 
     @Test

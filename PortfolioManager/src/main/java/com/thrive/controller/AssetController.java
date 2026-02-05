@@ -10,15 +10,13 @@ import com.thrive.dto.PriceResponse;
 import com.thrive.service.MarketPriceService;
 import java.util.List;
 
-
-
 @RestController
 @RequestMapping("/api/assets")
 public class AssetController {
     private final AssetService assetService;
     private final MarketPriceService marketPriceService;
 
-    public AssetController(AssetService assetService, MarketPriceService marketPriceService){
+    public AssetController(AssetService assetService, MarketPriceService marketPriceService) {
         this.assetService = assetService;
         this.marketPriceService = marketPriceService;
     }
@@ -27,6 +25,21 @@ public class AssetController {
     public ResponseEntity<Asset> createAsset(@Valid @RequestBody Asset asset) {
         Asset savedAsset = assetService.saveAsset(asset);
         return ResponseEntity.ok(savedAsset);
+    }
+
+    // PUT (Update) asset by ID
+    @PutMapping("/{id}")
+    public ResponseEntity<Asset> updateAsset(@PathVariable Long id, @Valid @RequestBody Asset assetDetails) {
+        Asset updatedAsset = assetService.updateAsset(id, assetDetails);
+        return ResponseEntity.ok(updatedAsset);
+    }
+
+    // GET asset by symbol
+    @GetMapping("/symbol/{symbol}")
+    public ResponseEntity<Asset> getAssetBySymbol(@PathVariable String symbol) {
+        return assetService.findBySymbol(symbol)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     // GET all assets
