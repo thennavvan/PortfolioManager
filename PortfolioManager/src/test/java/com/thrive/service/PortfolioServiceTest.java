@@ -97,7 +97,7 @@ class PortfolioServiceTest {
         assertEquals(21000.0, spySummary.getValue());
 
         // Verify total value
-        assertEquals(17000.0 + 17500.0 + 21000.0, result.getTotalValue(), 0.001);
+        assertEquals(17000.0 + 17500.0 + 21000.0, result.getTotalPortfolioValue(), 0.001);
 
         verify(assetRepo, times(1)).findAll();
         verify(marketPriceService, times(1)).getLivePrice("AAPL");
@@ -117,7 +117,7 @@ class PortfolioServiceTest {
         assertNotNull(result);
         assertNotNull(result.getAssets());
         assertTrue(result.getAssets().isEmpty());
-        assertEquals(0.0, result.getTotalValue(), 0.001);
+        assertEquals(0.0, result.getTotalPortfolioValue(), 0.001);
 
         verify(assetRepo, times(1)).findAll();
         verify(marketPriceService, never()).getLivePrice(anyString());
@@ -136,7 +136,7 @@ class PortfolioServiceTest {
         // Then
         assertNotNull(result);
         assertEquals(1, result.getAssets().size());
-        assertEquals(18000.0, result.getTotalValue(), 0.001);
+        assertEquals(18000.0, result.getTotalPortfolioValue(), 0.001);
 
         PortfolioAssetSummary summary = result.getAssets().get(0);
         assertEquals("AAPL", summary.getSymbol());
@@ -157,12 +157,12 @@ class PortfolioServiceTest {
         when(marketPriceService.getLivePrice("SPY")).thenReturn(new PriceResponse("SPY", 420.0, "USD"));
 
         // When
-        PortfolioAllocationResponse result = portfolioService.getAllocation();
+        PortfolioAllocationResponse result = portfolioService.getAllocations();
 
         // Then
         assertNotNull(result);
-        assertNotNull(result.getAllocation());
-        assertEquals(3, result.getAllocation().size());
+        assertNotNull(result.getAllocations());
+        assertEquals(3, result.getAllocations().size());
 
         // Calculate expected values
         double stockValue = 100.0 * 170.0; // 17000.0
@@ -170,10 +170,10 @@ class PortfolioServiceTest {
         double etfValue = 50.0 * 420.0; // 21000.0
         double totalValue = stockValue + cryptoValue + etfValue; // 55500.0
 
-        assertEquals(totalValue, result.getTotalValue(), 0.001);
+        assertEquals(totalValue, result.getTotalPortfolioValue(), 0.001);
 
         // Verify allocation items
-        PortfolioAllocationItem stockAllocation = result.getAllocation().stream()
+        PortfolioAllocationItem stockAllocation = result.getAllocations().stream()
                 .filter(item -> "STOCK".equals(item.getAssetType()))
                 .findFirst()
                 .orElse(null);
@@ -182,7 +182,7 @@ class PortfolioServiceTest {
         assertEquals(stockValue, stockAllocation.getValue(), 0.001);
         assertEquals(Math.round((stockValue / totalValue) * 100 * 100.0) / 100.0, stockAllocation.getPercentage(), 0.001);
 
-        PortfolioAllocationItem cryptoAllocation = result.getAllocation().stream()
+        PortfolioAllocationItem cryptoAllocation = result.getAllocations().stream()
                 .filter(item -> "CRYPTO".equals(item.getAssetType()))
                 .findFirst()
                 .orElse(null);
@@ -191,7 +191,7 @@ class PortfolioServiceTest {
         assertEquals(cryptoValue, cryptoAllocation.getValue(), 0.001);
         assertEquals(Math.round((cryptoValue / totalValue) * 100 * 100.0) / 100.0, cryptoAllocation.getPercentage(), 0.001);
 
-        PortfolioAllocationItem etfAllocation = result.getAllocation().stream()
+        PortfolioAllocationItem etfAllocation = result.getAllocations().stream()
                 .filter(item -> "ETF".equals(item.getAssetType()))
                 .findFirst()
                 .orElse(null);
@@ -212,13 +212,13 @@ class PortfolioServiceTest {
         when(assetRepo.findAll()).thenReturn(Arrays.asList());
 
         // When
-        PortfolioAllocationResponse result = portfolioService.getAllocation();
+        PortfolioAllocationResponse result = portfolioService.getAllocations();
 
         // Then
         assertNotNull(result);
-        assertNotNull(result.getAllocation());
-        assertTrue(result.getAllocation().isEmpty());
-        assertEquals(0.0, result.getTotalValue(), 0.001);
+        assertNotNull(result.getAllocations());
+        assertTrue(result.getAllocations().isEmpty());
+        assertEquals(0.0, result.getTotalPortfolioValue(), 0.001);
 
         verify(assetRepo, times(1)).findAll();
         verify(marketPriceService, never()).getLivePrice(anyString());
@@ -235,19 +235,19 @@ class PortfolioServiceTest {
         when(marketPriceService.getLivePrice("MSFT")).thenReturn(new PriceResponse("MSFT", 300.0, "USD"));
 
         // When
-        PortfolioAllocationResponse result = portfolioService.getAllocation();
+        PortfolioAllocationResponse result = portfolioService.getAllocations();
 
         // Then
         assertNotNull(result);
-        assertEquals(1, result.getAllocation().size());
+        assertEquals(1, result.getAllocations().size());
 
         double stockValue1 = 100.0 * 170.0; // 17000.0
         double stockValue2 = 200.0 * 300.0; // 60000.0
         double totalValue = stockValue1 + stockValue2; // 77000.0
 
-        assertEquals(totalValue, result.getTotalValue(), 0.001);
+        assertEquals(totalValue, result.getTotalPortfolioValue(), 0.001);
 
-        PortfolioAllocationItem stockAllocation = result.getAllocation().get(0);
+        PortfolioAllocationItem stockAllocation = result.getAllocations().get(0);
         assertEquals("STOCK", stockAllocation.getAssetType());
         assertEquals(totalValue, stockAllocation.getValue(), 0.001);
         assertEquals(100.0, stockAllocation.getPercentage(), 0.001);
@@ -265,16 +265,16 @@ class PortfolioServiceTest {
         when(marketPriceService.getLivePrice("TST")).thenReturn(new PriceResponse("TST", 1.234567, "USD"));
 
         // When
-        PortfolioAllocationResponse result = portfolioService.getAllocation();
+        PortfolioAllocationResponse result = portfolioService.getAllocations();
 
         // Then
         assertNotNull(result);
-        assertEquals(1, result.getAllocation().size());
+        assertEquals(1, result.getAllocations().size());
 
-        PortfolioAllocationItem allocation = result.getAllocation().get(0);
+        PortfolioAllocationItem allocation = result.getAllocations().get(0);
         assertEquals(1.23, allocation.getValue(), 0.001); // Should be rounded to 2 decimal places
         assertEquals(100.0, allocation.getPercentage(), 0.001); // Should be rounded to 2 decimal places
-        assertEquals(1.23, result.getTotalValue(), 0.001); // Should be rounded to 2 decimal places
+        assertEquals(1.23, result.getTotalPortfolioValue(), 0.001); // Should be rounded to 2 decimal places
 
         verify(assetRepo, times(1)).findAll();
         verify(marketPriceService, times(1)).getLivePrice("TST");

@@ -7,7 +7,6 @@ const Sidebar = ({ currentPage, setCurrentPage, isCollapsed, setIsCollapsed }) =
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'holdings', label: 'Portfolio Holdings' },
     { id: 'assets', label: 'Assets' },
-    { id: 'prices', label: 'Live Prices' },
     { id: 'performance', label: 'Performance' }
   ];
 

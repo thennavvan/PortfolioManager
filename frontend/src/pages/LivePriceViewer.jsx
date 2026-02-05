@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getLivePrice, getPriceHistory } from '../services/api';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import '../styles/LivePriceViewer.css';
@@ -11,6 +11,20 @@ const LivePriceViewer = () => {
   const [error, setError] = useState(null);
   const [searchHistory, setSearchHistory] = useState([]);
   const [chartType, setChartType] = useState('area'); // 'area', 'line', 'detailed'
+  const formRef = useRef(null);
+
+  // Check for symbol from global search
+  useEffect(() => {
+    const storedSymbol = sessionStorage.getItem('searchSymbol');
+    if (storedSymbol) {
+      setSymbol(storedSymbol);
+      sessionStorage.removeItem('searchSymbol');
+      // Trigger search after state update
+      setTimeout(() => {
+        formRef.current?.dispatchEvent(new Event('submit', { bubbles: true }));
+      }, 100);
+    }
+  }, []);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -63,15 +77,15 @@ const LivePriceViewer = () => {
 
   return (
     <div className="live-price-viewer">
-      <h1>Live Stock Price Viewer</h1>
+      <h1>Live Market Prices</h1>
 
-      <form onSubmit={handleSearch} className="search-form">
+      <form ref={formRef} onSubmit={handleSearch} className="search-form">
         <div className="input-group">
           <input
             type="text"
             value={symbol}
             onChange={(e) => setSymbol(e.target.value)}
-            placeholder="Enter stock symbol (e.g., AAPL, GOOGL)"
+            placeholder="Enter symbol (e.g., AAPL, GOOGL)"
             className="symbol-input"
           />
           <button type="submit" className="search-btn" disabled={loading}>

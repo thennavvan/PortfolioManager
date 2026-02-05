@@ -54,6 +54,11 @@ export const getPriceHistory = (symbol) => {
   return axios.get(`${priceServiceUrl}/${symbol}`);
 };
 
+export const searchAssets = (query) => {
+  const priceServiceUrl = 'http://localhost:8000/search';
+  return axios.get(priceServiceUrl, { params: { q: query } });
+};
+
 // ==================== PORTFOLIO ====================
 
 export const getPortfolioSummary = () => {
