@@ -160,17 +160,50 @@ const AddAssetForm = ({ onSubmit, editingAsset, onCancel }) => {
     }
   };
 
-  const isUpdating = !!existingAsset;
-  const buttonText = editingAsset ? 'Update Asset' : (isUpdating ? 'Update Quantity' : 'Add Asset');
-  const formTitle = editingAsset ? 'Edit Asset' : (isUpdating ? `Update ${formData.symbol.toUpperCase()}` : 'Add New Asset');
+  const isUpdating = !!existingAsset && !editingAsset;
+  const buttonText = editingAsset ? 'Update Asset' : (isUpdating ? 'Add More Units' : 'Add Asset');
+  const formTitle = editingAsset ? 'Edit Asset' : (isUpdating ? `Add to ${formData.symbol.toUpperCase()}` : 'Add New Asset');
+
+  // Calculate weighted average preview
+  const getWeightedAveragePreview = () => {
+    if (!isUpdating || !existingAsset) return null;
+    
+    const oldQty = existingAsset.quantity;
+    const oldPrice = existingAsset.buyPrice;
+    const newQty = parseFloat(formData.quantity) || 0;
+    const newPrice = parseFloat(formData.buyPrice) || 0;
+    
+    if (newQty <= 0 || newPrice <= 0) return null;
+    
+    const totalInvested = (oldQty * oldPrice) + (newQty * newPrice);
+    const totalQty = oldQty + newQty;
+    const weightedAvg = totalInvested / totalQty;
+    
+    return {
+      totalQty,
+      weightedAvg: weightedAvg.toFixed(2),
+      oldQty,
+      oldPrice: oldPrice.toFixed(2)
+    };
+  };
+
+  const preview = getWeightedAveragePreview();
 
   return (
     <form className="add-asset-form" onSubmit={handleSubmit}>
       <h3>{formTitle}</h3>
 
-      {isUpdating && !editingAsset && (
+      {isUpdating && (
         <div className="info-box">
-          <p>This asset already exists. You can increase its quantity here.</p>
+          <p><strong>Existing:</strong> {existingAsset.quantity} units @ ${existingAsset.buyPrice?.toFixed(2)}</p>
+          <p>Enter the new units you're buying. The average cost will be calculated automatically.</p>
+        </div>
+      )}
+
+      {preview && (
+        <div className="preview-box">
+          <p><strong>After adding:</strong></p>
+          <p>Total: <strong>{preview.totalQty}</strong> units @ <strong>${preview.weightedAvg}</strong> avg cost</p>
         </div>
       )}
 

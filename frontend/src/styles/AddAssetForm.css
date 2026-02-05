@@ -15,17 +15,45 @@
 }
 
 .info-box {
-  background: rgba(30, 64, 175, 0.05);
-  border-left: 4px solid var(--primary);
+  background: rgba(91, 163, 217, 0.1);
+  border-left: 4px solid var(--accent-blue);
   padding: 1rem;
   margin-bottom: 1.5rem;
   border-radius: 4px;
   font-size: 13px;
-  color: var(--primary);
+  color: var(--accent-blue);
 }
 
 .info-box p {
   margin: 0;
+  line-height: 1.6;
+}
+
+.info-box p + p {
+  margin-top: 0.5rem;
+}
+
+.preview-box {
+  background: rgba(78, 187, 138, 0.1);
+  border-left: 4px solid var(--accent-green);
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--accent-green);
+}
+
+.preview-box p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.preview-box p + p {
+  margin-top: 0.25rem;
+}
+
+.preview-box strong {
+  color: var(--text);
 }
 
 .checking {
@@ -108,13 +136,13 @@
 }
 
 .submit-btn {
-  background: var(--primary);
-  color: white;
+  background: var(--accent-blue);
+  color: #000000;
 }
 
 .submit-btn:hover:not(:disabled) {
-  background: var(--primary-dark, #1d38a8);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: var(--primary-light);
+  box-shadow: 0 4px 6px -1px rgba(91, 163, 217, 0.3);
 }
 
 .submit-btn:disabled {

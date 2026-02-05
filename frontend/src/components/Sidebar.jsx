@@ -21,6 +21,7 @@ const Sidebar = ({ currentPage, setCurrentPage, isCollapsed, setIsCollapsed }) =
         >
           ☰
         </button>
+        {!isCollapsed && <span className="logo-text">FinSight</span>}
       </div>
 
       <nav className="sidebar-nav">

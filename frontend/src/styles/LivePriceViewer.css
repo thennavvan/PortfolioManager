@@ -50,8 +50,8 @@
 }
 
 .search-btn {
-  background: var(--primary);
-  color: white;
+  background: var(--accent-blue);
+  color: #000000;
   padding: 12px 32px;
   font-weight: 600;
   font-size: 13px;
@@ -64,8 +64,8 @@
 }
 
 .search-btn:hover:not(:disabled) {
-  background: var(--primary-dark, #1d38a8);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: var(--primary-light);
+  box-shadow: 0 4px 6px -1px rgba(91, 163, 217, 0.3);
 }
 
 .search-btn:disabled {
@@ -77,10 +77,10 @@
   background: var(--surface);
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
   margin-bottom: 2rem;
   max-width: 600px;
-  border-top: 3px solid var(--success);
+  border-top: 3px solid var(--accent-green);
   animation: slideIn 0.3s ease;
 }
 
@@ -141,10 +141,10 @@
 }
 
 .history-btn {
-  background: #f0f4ff;
-  color: #667eea;
+  background: var(--surface-light);
+  color: var(--accent-blue);
   padding: 8px 16px;
-  border: 2px solid #e0e7ff;
+  border: 1px solid var(--border);
   border-radius: 4px;
   font-weight: 500;
   font-size: 13px;
@@ -152,8 +152,9 @@
 }
 
 .history-btn:hover {
-  background: #e0e7ff;
-  border-color: #667eea;
+  background: var(--accent-blue);
+  color: #000000;
+  border-color: var(--accent-blue);
   transform: none;
 }
 
@@ -164,6 +165,51 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
   margin-bottom: 2rem;
   animation: slideIn 0.3s ease;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.chart-header h3 {
+  color: var(--text);
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.chart-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--surface-light);
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.toggle-btn.active {
+  background: var(--accent-blue);
+  color: #000000;
 }
 
 .history-section h3 {
