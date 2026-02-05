@@ -103,4 +103,9 @@ export const getAssetInfo = (symbol) => {
   return axios.get(`${priceServiceUrl}/${symbol}`);
 };
 
+export const getSimilarStocks = (symbol) => {
+  const priceServiceUrl = 'http://localhost:8000/similar-stocks';
+  return axios.get(`${priceServiceUrl}/${symbol}`);
+};
+
 export default apiClient;

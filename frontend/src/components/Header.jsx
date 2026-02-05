@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { exportPortfolioPDF } from '../services/pdfExport';
-import { searchAssets, getLivePrice, getPriceHistory } from '../services/api';
+import { searchAssets, getLivePrice, getPriceHistory, getSimilarStocks } from '../services/api';
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import '../styles/Header.css';
 
@@ -21,6 +21,8 @@ const Header = ({ currentPage, setCurrentPage }) => {
   const [historyData, setHistoryData] = useState(null);
   const [loadingPrice, setLoadingPrice] = useState(false);
   const [chartType, setChartType] = useState('area');
+  const [similarStocks, setSimilarStocks] = useState(null);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
 
   useEffect(() => {
     // Check system preference and localStorage
@@ -84,6 +86,7 @@ const Header = ({ currentPage, setCurrentPage }) => {
     setLoadingPrice(true);
     setPriceData(null);
     setHistoryData(null);
+    setSimilarStocks(null);
     
     try {
       // Fetch live price
@@ -99,6 +102,17 @@ const Header = ({ currentPage, setCurrentPage }) => {
       } catch (historyErr) {
         console.error('Error fetching price history:', historyErr);
       }
+      
+      // Fetch similar stocks
+      try {
+        setLoadingSimilar(true);
+        const similarResponse = await getSimilarStocks(result.symbol);
+        setSimilarStocks(similarResponse.data);
+      } catch (similarErr) {
+        console.error('Error fetching similar stocks:', similarErr);
+      } finally {
+        setLoadingSimilar(false);
+      }
     } catch (err) {
       console.error('Error fetching price:', err);
     } finally {
@@ -111,6 +125,44 @@ const Header = ({ currentPage, setCurrentPage }) => {
     setSelectedAsset(null);
     setPriceData(null);
     setHistoryData(null);
+    setSimilarStocks(null);
+  };
+
+  const handleSimilarStockClick = async (stock) => {
+    // Load the similar stock in the same modal
+    setSelectedAsset({ symbol: stock.symbol, name: stock.name, type: 'EQUITY' });
+    setLoadingPrice(true);
+    setPriceData(null);
+    setHistoryData(null);
+    setSimilarStocks(null);
+    
+    try {
+      const priceResponse = await getLivePrice(stock.symbol);
+      setPriceData(priceResponse.data);
+      
+      try {
+        const historyResponse = await getPriceHistory(stock.symbol);
+        if (historyResponse.data && historyResponse.data.history) {
+          setHistoryData(historyResponse.data.history);
+        }
+      } catch (historyErr) {
+        console.error('Error fetching price history:', historyErr);
+      }
+      
+      try {
+        setLoadingSimilar(true);
+        const similarResponse = await getSimilarStocks(stock.symbol);
+        setSimilarStocks(similarResponse.data);
+      } catch (similarErr) {
+        console.error('Error fetching similar stocks:', similarErr);
+      } finally {
+        setLoadingSimilar(false);
+      }
+    } catch (err) {
+      console.error('Error fetching price:', err);
+    } finally {
+      setLoadingPrice(false);
+    }
   };
 
   const getTypeLabel = (type) => {
@@ -400,6 +452,38 @@ const Header = ({ currentPage, setCurrentPage }) => {
                         )}
                       </ResponsiveContainer>
                     </div>
+                  </div>
+                )}
+
+                {/* Similar Stocks Section */}
+                {(similarStocks || loadingSimilar) && (
+                  <div className="similar-stocks-section">
+                    <h4>Similar {similarStocks?.sector === 'Cryptocurrency' ? 'Cryptocurrencies' : 'Stocks'}</h4>
+                    {similarStocks?.sector && similarStocks?.industry && (
+                      <div className="sector-info">
+                        <span className="sector-badge">{similarStocks.sector}</span>
+                        <span className="industry-badge">{similarStocks.industry}</span>
+                      </div>
+                    )}
+                    {loadingSimilar ? (
+                      <div className="loading-similar">Finding similar stocks...</div>
+                    ) : similarStocks?.similar && similarStocks.similar.length > 0 ? (
+                      <div className="similar-stocks-list">
+                        {similarStocks.similar.map((stock, index) => (
+                          <div 
+                            key={index} 
+                            className="similar-stock-item"
+                            onClick={() => handleSimilarStockClick(stock)}
+                          >
+                            <div className="similar-stock-symbol">{stock.symbol}</div>
+                            <div className="similar-stock-name">{stock.name}</div>
+                            <div className="similar-stock-reason">{stock.reason}</div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="no-similar">No similar stocks found</p>
+                    )}
                   </div>
                 )}
               </>

@@ -458,6 +458,106 @@
   padding: 16px 8px;
 }
 
+/* Similar Stocks Section */
+.similar-stocks-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.similar-stocks-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.sector-info {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sector-badge,
+.industry-badge {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.sector-badge {
+  background: rgba(91, 163, 217, 0.2);
+  color: #5ba3d9;
+}
+
+.industry-badge {
+  background: rgba(78, 187, 138, 0.2);
+  color: #4ebb8a;
+}
+
+.loading-similar {
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 20px 0;
+  text-align: center;
+}
+
+.similar-stocks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.similar-stock-item {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface-light);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.similar-stock-item:hover {
+  background: rgba(91, 163, 217, 0.1);
+  border-color: var(--accent-blue);
+  transform: translateX(4px);
+}
+
+.similar-stock-symbol {
+  font-weight: 700;
+  color: var(--accent-blue);
+  font-size: 14px;
+}
+
+.similar-stock-name {
+  color: var(--text);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.similar-stock-reason {
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.no-similar {
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-align: center;
+  padding: 20px 0;
+}
+
 @media (max-width: 768px) {
   .price-modal {
     width: 95%;
@@ -476,5 +576,13 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
+  }
+  
+  .similar-stock-item {
+    grid-template-columns: 70px 1fr;
+  }
+  
+  .similar-stock-reason {
+    display: none;
   }
 }

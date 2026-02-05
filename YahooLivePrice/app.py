@@ -340,6 +340,189 @@ def health():
     return jsonify({"status": "ok"}), 200
 
 
+@app.route("/similar-stocks/<symbol>", methods=["GET"])
+def get_similar_stocks(symbol):
+    """Get similar stocks based on sector and industry"""
+    try:
+        ticker = yf.Ticker(symbol)
+        info = ticker.info
+        
+        sector = info.get('sector', '')
+        industry = info.get('industry', '')
+        quote_type = info.get('quoteType', '')
+        
+        # For crypto, suggest other major cryptos
+        if quote_type == 'CRYPTOCURRENCY' or '-USD' in symbol.upper():
+            crypto_suggestions = [
+                {'symbol': 'BTC-USD', 'name': 'Bitcoin USD', 'reason': 'Major Cryptocurrency'},
+                {'symbol': 'ETH-USD', 'name': 'Ethereum USD', 'reason': 'Major Cryptocurrency'},
+                {'symbol': 'SOL-USD', 'name': 'Solana USD', 'reason': 'Major Cryptocurrency'},
+                {'symbol': 'XRP-USD', 'name': 'XRP USD', 'reason': 'Major Cryptocurrency'},
+                {'symbol': 'ADA-USD', 'name': 'Cardano USD', 'reason': 'Major Cryptocurrency'},
+                {'symbol': 'DOGE-USD', 'name': 'Dogecoin USD', 'reason': 'Major Cryptocurrency'},
+            ]
+            # Filter out the current symbol
+            similar = [c for c in crypto_suggestions if c['symbol'] != symbol.upper()][:5]
+            return jsonify({
+                "symbol": symbol.upper(),
+                "sector": "Cryptocurrency",
+                "industry": "Digital Assets",
+                "similar": similar
+            }), 200
+        
+        # For ETFs, suggest similar ETFs
+        if quote_type == 'ETF':
+            etf_suggestions = [
+                {'symbol': 'SPY', 'name': 'SPDR S&P 500 ETF', 'reason': 'S&P 500 Index'},
+                {'symbol': 'QQQ', 'name': 'Invesco QQQ Trust', 'reason': 'Nasdaq 100 Index'},
+                {'symbol': 'VTI', 'name': 'Vanguard Total Stock Market', 'reason': 'Total Market'},
+                {'symbol': 'IWM', 'name': 'iShares Russell 2000', 'reason': 'Small Cap'},
+                {'symbol': 'DIA', 'name': 'SPDR Dow Jones', 'reason': 'Dow Jones Index'},
+                {'symbol': 'VOO', 'name': 'Vanguard S&P 500', 'reason': 'S&P 500 Index'},
+            ]
+            similar = [e for e in etf_suggestions if e['symbol'] != symbol.upper()][:5]
+            return jsonify({
+                "symbol": symbol.upper(),
+                "sector": "ETF",
+                "industry": info.get('category', 'Exchange Traded Fund'),
+                "similar": similar
+            }), 200
+        
+        if not sector:
+            return jsonify({
+                "symbol": symbol.upper(),
+                "sector": None,
+                "industry": None,
+                "similar": [],
+                "message": "No sector information available"
+            }), 200
+        
+        # Sector-based stock suggestions (major companies by sector)
+        sector_stocks = {
+            'Technology': [
+                {'symbol': 'AAPL', 'name': 'Apple Inc.', 'industry': 'Consumer Electronics'},
+                {'symbol': 'MSFT', 'name': 'Microsoft Corp.', 'industry': 'Software'},
+                {'symbol': 'GOOGL', 'name': 'Alphabet Inc.', 'industry': 'Internet Services'},
+                {'symbol': 'NVDA', 'name': 'NVIDIA Corp.', 'industry': 'Semiconductors'},
+                {'symbol': 'META', 'name': 'Meta Platforms', 'industry': 'Social Media'},
+                {'symbol': 'AVGO', 'name': 'Broadcom Inc.', 'industry': 'Semiconductors'},
+                {'symbol': 'CRM', 'name': 'Salesforce Inc.', 'industry': 'Software'},
+                {'symbol': 'AMD', 'name': 'AMD Inc.', 'industry': 'Semiconductors'},
+            ],
+            'Financial Services': [
+                {'symbol': 'JPM', 'name': 'JPMorgan Chase', 'industry': 'Banks'},
+                {'symbol': 'BAC', 'name': 'Bank of America', 'industry': 'Banks'},
+                {'symbol': 'WFC', 'name': 'Wells Fargo', 'industry': 'Banks'},
+                {'symbol': 'GS', 'name': 'Goldman Sachs', 'industry': 'Investment Banking'},
+                {'symbol': 'MS', 'name': 'Morgan Stanley', 'industry': 'Investment Banking'},
+                {'symbol': 'V', 'name': 'Visa Inc.', 'industry': 'Payments'},
+                {'symbol': 'MA', 'name': 'Mastercard', 'industry': 'Payments'},
+            ],
+            'Healthcare': [
+                {'symbol': 'JNJ', 'name': 'Johnson & Johnson', 'industry': 'Pharmaceuticals'},
+                {'symbol': 'UNH', 'name': 'UnitedHealth Group', 'industry': 'Health Insurance'},
+                {'symbol': 'PFE', 'name': 'Pfizer Inc.', 'industry': 'Pharmaceuticals'},
+                {'symbol': 'ABBV', 'name': 'AbbVie Inc.', 'industry': 'Pharmaceuticals'},
+                {'symbol': 'MRK', 'name': 'Merck & Co.', 'industry': 'Pharmaceuticals'},
+                {'symbol': 'LLY', 'name': 'Eli Lilly', 'industry': 'Pharmaceuticals'},
+            ],
+            'Consumer Cyclical': [
+                {'symbol': 'AMZN', 'name': 'Amazon.com', 'industry': 'E-Commerce'},
+                {'symbol': 'TSLA', 'name': 'Tesla Inc.', 'industry': 'Auto Manufacturers'},
+                {'symbol': 'HD', 'name': 'Home Depot', 'industry': 'Home Improvement'},
+                {'symbol': 'NKE', 'name': 'Nike Inc.', 'industry': 'Apparel'},
+                {'symbol': 'MCD', 'name': "McDonald's", 'industry': 'Restaurants'},
+                {'symbol': 'SBUX', 'name': 'Starbucks', 'industry': 'Restaurants'},
+            ],
+            'Communication Services': [
+                {'symbol': 'GOOGL', 'name': 'Alphabet Inc.', 'industry': 'Internet Services'},
+                {'symbol': 'META', 'name': 'Meta Platforms', 'industry': 'Social Media'},
+                {'symbol': 'NFLX', 'name': 'Netflix Inc.', 'industry': 'Streaming'},
+                {'symbol': 'DIS', 'name': 'Walt Disney', 'industry': 'Entertainment'},
+                {'symbol': 'T', 'name': 'AT&T Inc.', 'industry': 'Telecom'},
+                {'symbol': 'VZ', 'name': 'Verizon', 'industry': 'Telecom'},
+            ],
+            'Consumer Defensive': [
+                {'symbol': 'PG', 'name': 'Procter & Gamble', 'industry': 'Consumer Products'},
+                {'symbol': 'KO', 'name': 'Coca-Cola', 'industry': 'Beverages'},
+                {'symbol': 'PEP', 'name': 'PepsiCo', 'industry': 'Beverages'},
+                {'symbol': 'WMT', 'name': 'Walmart', 'industry': 'Retail'},
+                {'symbol': 'COST', 'name': 'Costco', 'industry': 'Retail'},
+            ],
+            'Energy': [
+                {'symbol': 'XOM', 'name': 'Exxon Mobil', 'industry': 'Oil & Gas'},
+                {'symbol': 'CVX', 'name': 'Chevron', 'industry': 'Oil & Gas'},
+                {'symbol': 'COP', 'name': 'ConocoPhillips', 'industry': 'Oil & Gas'},
+                {'symbol': 'SLB', 'name': 'Schlumberger', 'industry': 'Oil Services'},
+                {'symbol': 'EOG', 'name': 'EOG Resources', 'industry': 'Oil & Gas'},
+            ],
+            'Industrials': [
+                {'symbol': 'CAT', 'name': 'Caterpillar', 'industry': 'Machinery'},
+                {'symbol': 'BA', 'name': 'Boeing', 'industry': 'Aerospace'},
+                {'symbol': 'UPS', 'name': 'United Parcel Service', 'industry': 'Logistics'},
+                {'symbol': 'HON', 'name': 'Honeywell', 'industry': 'Conglomerate'},
+                {'symbol': 'GE', 'name': 'General Electric', 'industry': 'Conglomerate'},
+                {'symbol': 'RTX', 'name': 'RTX Corp', 'industry': 'Aerospace & Defense'},
+            ],
+            'Real Estate': [
+                {'symbol': 'AMT', 'name': 'American Tower', 'industry': 'REIT'},
+                {'symbol': 'PLD', 'name': 'Prologis', 'industry': 'Industrial REIT'},
+                {'symbol': 'CCI', 'name': 'Crown Castle', 'industry': 'REIT'},
+                {'symbol': 'EQIX', 'name': 'Equinix', 'industry': 'Data Center REIT'},
+                {'symbol': 'SPG', 'name': 'Simon Property', 'industry': 'Retail REIT'},
+            ],
+            'Utilities': [
+                {'symbol': 'NEE', 'name': 'NextEra Energy', 'industry': 'Utilities'},
+                {'symbol': 'DUK', 'name': 'Duke Energy', 'industry': 'Utilities'},
+                {'symbol': 'SO', 'name': 'Southern Company', 'industry': 'Utilities'},
+                {'symbol': 'D', 'name': 'Dominion Energy', 'industry': 'Utilities'},
+                {'symbol': 'AEP', 'name': 'American Electric Power', 'industry': 'Utilities'},
+            ],
+            'Basic Materials': [
+                {'symbol': 'LIN', 'name': 'Linde plc', 'industry': 'Chemicals'},
+                {'symbol': 'APD', 'name': 'Air Products', 'industry': 'Chemicals'},
+                {'symbol': 'SHW', 'name': 'Sherwin-Williams', 'industry': 'Chemicals'},
+                {'symbol': 'FCX', 'name': 'Freeport-McMoRan', 'industry': 'Mining'},
+                {'symbol': 'NEM', 'name': 'Newmont Corp', 'industry': 'Gold Mining'},
+            ],
+        }
+        
+        # Get stocks from the same sector
+        sector_list = sector_stocks.get(sector, [])
+        
+        # Filter out the current symbol and prioritize same industry
+        similar = []
+        same_industry = []
+        other_sector = []
+        
+        for stock in sector_list:
+            if stock['symbol'] == symbol.upper():
+                continue
+            if stock.get('industry', '').lower() == industry.lower():
+                same_industry.append({**stock, 'reason': f'Same Industry: {industry}'})
+            else:
+                other_sector.append({**stock, 'reason': f'Same Sector: {sector}'})
+        
+        # Combine: same industry first, then other sector stocks
+        similar = same_industry[:3] + other_sector[:5 - len(same_industry[:3])]
+        
+        return jsonify({
+            "symbol": symbol.upper(),
+            "name": info.get('shortName', symbol.upper()),
+            "sector": sector,
+            "industry": industry,
+            "similar": similar[:5]
+        }), 200
+        
+    except Exception as e:
+        print(f"Error fetching similar stocks for {symbol}: {str(e)}")
+        return jsonify({
+            "error": "Similar stocks unavailable",
+            "details": str(e),
+            "symbol": symbol.upper()
+        }), 503
+
+
 @app.route("/price-history/<symbol>", methods=["GET"])
 def get_price_history(symbol):
     """Get 30 days of price history for a symbol"""
