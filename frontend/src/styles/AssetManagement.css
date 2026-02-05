@@ -257,6 +257,13 @@
   white-space: nowrap;
 }
 
+.assets-table td.actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 @media (max-width: 768px) {
   .asset-management h1 {
     font-size: 26px;
