@@ -5,7 +5,7 @@ import '../styles/AddAssetForm.css';
 const AddAssetForm = ({ onSubmit, editingAsset, onCancel }) => {
   const [formData, setFormData] = useState({
     symbol: '',
-    assetType: 'STOCK',
+    assetType: '',
     quantity: '',
     buyPrice: ''
   });
@@ -137,6 +137,10 @@ const AddAssetForm = ({ onSubmit, editingAsset, onCancel }) => {
     } else if (!symbolValidation?.valid) {
       newErrors.symbol = symbolValidation?.message || 'Please validate the ticker symbol first';
     }
+
+    if (!formData.assetType) {
+      newErrors.assetType = 'Please select an asset type';
+    }
     
     if (!formData.quantity || parseFloat(formData.quantity) <= 0) {
       newErrors.quantity = 'Quantity must be greater than 0';
@@ -235,7 +239,7 @@ const AddAssetForm = ({ onSubmit, editingAsset, onCancel }) => {
       )}
 
       <div className="form-group">
-        <label htmlFor="symbol">Stock Symbol</label>
+        <label htmlFor="symbol">Symbol</label>
         <input
           type="text"
           id="symbol"
@@ -265,12 +269,15 @@ const AddAssetForm = ({ onSubmit, editingAsset, onCancel }) => {
           name="assetType"
           value={formData.assetType}
           onChange={handleChange}
+          className={errors.assetType ? 'error' : ''}
         >
+          <option value="" disabled>Select Asset Type</option>
           <option value="STOCK">Stock</option>
           <option value="CRYPTO">Crypto</option>
           <option value="FOREX">Forex</option>
           <option value="ETF">ETF</option>
         </select>
+        {errors.assetType && <span className="error-msg">{errors.assetType}</span>}
       </div>
 
       <div className="form-group">

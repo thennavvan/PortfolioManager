@@ -29,7 +29,7 @@ const LivePriceViewer = () => {
   const handleSearch = async (e) => {
     e.preventDefault();
     if (!symbol.trim()) {
-      setError('Please enter a stock symbol');
+      setError('Please enter a ticker symbol');
       return;
     }
 

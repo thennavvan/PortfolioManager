@@ -16,7 +16,7 @@ const WhatIfSimulator = () => {
     name: '',
     quantity: '',
     price: '',
-    assetType: 'STOCK'
+    assetType: ''
   });
   
   // Search state
@@ -97,6 +97,12 @@ const WhatIfSimulator = () => {
       return;
     }
 
+    if (!newChange.assetType) {
+      setError('Please select an asset type');
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
     const symbolUpper = newChange.symbol.toUpperCase();
     
     // Validate SELL action - check if asset exists in holdings
@@ -142,7 +148,7 @@ const WhatIfSimulator = () => {
       name: '',
       quantity: '',
       price: '',
-      assetType: 'STOCK'
+      assetType: ''
     });
     setSearchQuery('');
     setResults(null); // Clear previous results
@@ -295,6 +301,7 @@ const WhatIfSimulator = () => {
                   value={newChange.assetType}
                   onChange={(e) => setNewChange({ ...newChange, assetType: e.target.value })}
                 >
+                  <option value="" disabled>Select Asset Type</option>
                   <option value="STOCK">Stock</option>
                   <option value="ETF">ETF</option>
                   <option value="CRYPTO">Crypto</option>
