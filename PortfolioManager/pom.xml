@@ -49,6 +49,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Yahoo Finance (optional, you may remove later) -->
         <dependency>
             <groupId>com.yahoofinance-api</groupId>
