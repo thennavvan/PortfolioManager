@@ -1,5 +1,6 @@
 package com.thrive.service;
 
+import com.thrive.dto.HoldingDto;
 import com.thrive.dto.PortfolioAllocationItem;
 import com.thrive.dto.PortfolioAllocationResponse;
 import com.thrive.dto.PortfolioAssetSummary;
@@ -310,5 +311,173 @@ class PortfolioServiceTest {
         assertEquals(1.23, result.getTotalValue(), 0.001); // Should be rounded to 2 decimal places
 
         verify(assetRepo, times(1)).findAll();
+    }
+
+    @Test
+    void getHoldings_ShouldReturnCorrectHoldingsWithLivePrices() {
+        // Given
+        when(assetRepo.findAll()).thenReturn(testAssets);
+        when(marketPriceService.getLivePrice("AAPL")).thenReturn(new PriceResponse("AAPL", 170.0, "USD"));
+        when(marketPriceService.getLivePrice("BTC")).thenReturn(new PriceResponse("BTC", 35000.0, "USD"));
+        when(marketPriceService.getLivePrice("SPY")).thenReturn(new PriceResponse("SPY", 420.0, "USD"));
+
+        // When
+        List<HoldingDto> result = portfolioService.getHoldings();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(3, result.size());
+
+        // Verify AAPL holding
+        HoldingDto aaplHolding = result.stream()
+                .filter(holding -> "AAPL".equals(holding.getSymbol()))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(aaplHolding);
+        assertEquals("AAPL", aaplHolding.getSymbol());
+        assertEquals("STOCK", aaplHolding.getAssetType());
+        assertEquals(100.0, aaplHolding.getQuantity());
+        assertEquals(150.0, aaplHolding.getBuyPrice());
+        assertEquals(170.0, aaplHolding.getCurrentPrice());
+        assertEquals(15000.0, aaplHolding.getInvestedValue());
+        assertEquals(17000.0, aaplHolding.getMarketValue());
+        assertEquals(2000.0, aaplHolding.getProfitLoss());
+        assertEquals(13.33, aaplHolding.getProfitLossPercent(), 0.01);
+
+        // Verify BTC holding
+        HoldingDto btcHolding = result.stream()
+                .filter(holding -> "BTC".equals(holding.getSymbol()))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(btcHolding);
+        assertEquals("BTC", btcHolding.getSymbol());
+        assertEquals("CRYPTO", btcHolding.getAssetType());
+        assertEquals(0.5, btcHolding.getQuantity());
+        assertEquals(30000.0, btcHolding.getBuyPrice());
+        assertEquals(35000.0, btcHolding.getCurrentPrice());
+        assertEquals(15000.0, btcHolding.getInvestedValue());
+        assertEquals(17500.0, btcHolding.getMarketValue());
+        assertEquals(2500.0, btcHolding.getProfitLoss());
+        assertEquals(16.67, btcHolding.getProfitLossPercent(), 0.01);
+
+        verify(assetRepo, times(1)).findAll();
+        verify(marketPriceService, times(1)).getLivePrice("AAPL");
+        verify(marketPriceService, times(1)).getLivePrice("BTC");
+        verify(marketPriceService, times(1)).getLivePrice("SPY");
+    }
+
+    @Test
+    void getHoldings_ShouldReturnEmptyListWhenNoAssets() {
+        // Given
+        when(assetRepo.findAll()).thenReturn(Arrays.asList());
+
+        // When
+        List<HoldingDto> result = portfolioService.getHoldings();
+
+        // Then
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(assetRepo, times(1)).findAll();
+        verify(marketPriceService, never()).getLivePrice(anyString());
+    }
+
+    @Test
+    void getHoldings_ShouldHandleZeroBuyPrice() {
+        // Given
+        Asset zeroBuyPriceAsset = new Asset("Test", "TST", Asset.AssetType.STOCK, 10.0, 0.0);
+        when(assetRepo.findAll()).thenReturn(Arrays.asList(zeroBuyPriceAsset));
+        when(marketPriceService.getLivePrice("TST")).thenReturn(new PriceResponse("TST", 50.0, "USD"));
+
+        // When
+        List<HoldingDto> result = portfolioService.getHoldings();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+
+        HoldingDto holding = result.get(0);
+        assertEquals("TST", holding.getSymbol());
+        assertEquals(0.0, holding.getInvestedValue());
+        assertEquals(500.0, holding.getMarketValue());
+        assertEquals(500.0, holding.getProfitLoss());
+        assertEquals(0.0, holding.getProfitLossPercent()); // Should be 0 when invested value is 0
+
+        verify(assetRepo, times(1)).findAll();
+        verify(marketPriceService, times(1)).getLivePrice("TST");
+    }
+
+    @Test
+    void getHoldings_ShouldHandleLoss() {
+        // Given
+        Asset lossAsset = new Asset("Test", "TST", Asset.AssetType.STOCK, 10.0, 100.0);
+        when(assetRepo.findAll()).thenReturn(Arrays.asList(lossAsset));
+        when(marketPriceService.getLivePrice("TST")).thenReturn(new PriceResponse("TST", 50.0, "USD"));
+
+        // When
+        List<HoldingDto> result = portfolioService.getHoldings();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.size());
+
+        HoldingDto holding = result.get(0);
+        assertEquals("TST", holding.getSymbol());
+        assertEquals(1000.0, holding.getInvestedValue());
+        assertEquals(500.0, holding.getMarketValue());
+        assertEquals(-500.0, holding.getProfitLoss());
+        assertEquals(-50.0, holding.getProfitLossPercent());
+
+        verify(assetRepo, times(1)).findAll();
+        verify(marketPriceService, times(1)).getLivePrice("TST");
+    }
+
+    @Test
+    void getPortfolioSummary_ShouldHandleZeroQuantityAssets() {
+        // Given
+        Asset zeroQuantityAsset = new Asset("Test", "TST", Asset.AssetType.STOCK, 0.0, 100.0);
+        when(assetRepo.findAll()).thenReturn(Arrays.asList(zeroQuantityAsset));
+        when(marketPriceService.getLivePrice("TST")).thenReturn(new PriceResponse("TST", 150.0, "USD"));
+
+        // When
+        PortfolioSummaryResponse result = portfolioService.getPortfolioSummary();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.getAssets().size());
+        assertEquals(0.0, result.getTotalValue(), 0.001);
+
+        PortfolioAssetSummary summary = result.getAssets().get(0);
+        assertEquals("TST", summary.getSymbol());
+        assertEquals(0.0, summary.getQuantity());
+        assertEquals(150.0, summary.getPrice());
+        assertEquals(0.0, summary.getValue());
+
+        verify(assetRepo, times(1)).findAll();
+        verify(marketPriceService, times(1)).getLivePrice("TST");
+    }
+
+    @Test
+    void getAllocation_ShouldHandleZeroTotalValue() {
+        // Given
+        Asset zeroQuantityAsset = new Asset("Test", "TST", Asset.AssetType.STOCK, 0.0, 100.0);
+        when(assetRepo.findAll()).thenReturn(Arrays.asList(zeroQuantityAsset));
+        when(marketPriceService.getLivePrice("TST")).thenReturn(new PriceResponse("TST", 150.0, "USD"));
+
+        // When
+        PortfolioAllocationResponse result = portfolioService.getAllocation();
+
+        // Then
+        assertNotNull(result);
+        assertEquals(1, result.getAllocation().size());
+        assertEquals(0.0, result.getTotalValue(), 0.001);
+
+        PortfolioAllocationItem allocation = result.getAllocation().get(0);
+        assertEquals("STOCK", allocation.getAssetType());
+        assertEquals(0.0, allocation.getValue(), 0.001);
+        assertEquals(0.0, allocation.getPercentage(), 0.001);
+
+        verify(assetRepo, times(1)).findAll();
+        verify(marketPriceService, times(1)).getLivePrice("TST");
     }
 }

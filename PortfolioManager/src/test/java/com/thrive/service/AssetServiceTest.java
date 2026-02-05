@@ -127,6 +127,46 @@ class AssetServiceTest {
     }
 
     @Test
+    void updateAsset_ShouldUpdateAndSave_WhenAssetExists() {
+        // Given
+        Asset existing = new Asset("Old Name", "OLD", Asset.AssetType.STOCK, 1.0, 10.0);
+        Asset updated = new Asset("New Name", "NEW", Asset.AssetType.CRYPTO, 2.0, 20.0);
+
+        when(assetRepo.findById(1L)).thenReturn(Optional.of(existing));
+        when(assetRepo.save(any(Asset.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // When
+        Optional<Asset> result = assetService.updateAsset(1L, updated);
+
+        // Then
+        assertTrue(result.isPresent());
+        Asset saved = result.get();
+        assertEquals("New Name", saved.getName());
+        assertEquals("NEW", saved.getSymbol());
+        assertEquals(Asset.AssetType.CRYPTO, saved.getAssetType());
+        assertEquals(2.0, saved.getQuantity());
+        assertEquals(20.0, saved.getBuyPrice());
+
+        verify(assetRepo, times(1)).findById(1L);
+        verify(assetRepo, times(1)).save(existing);
+    }
+
+    @Test
+    void updateAsset_ShouldReturnEmpty_WhenAssetDoesNotExist() {
+        // Given
+        Asset updated = new Asset("New Name", "NEW", Asset.AssetType.CRYPTO, 2.0, 20.0);
+        when(assetRepo.findById(999L)).thenReturn(Optional.empty());
+
+        // When
+        Optional<Asset> result = assetService.updateAsset(999L, updated);
+
+        // Then
+        assertTrue(result.isEmpty());
+        verify(assetRepo, times(1)).findById(999L);
+        verify(assetRepo, never()).save(any(Asset.class));
+    }
+
+    @Test
     void getPortfolioSummary_ShouldReturnCorrectSummary() {
         // Given
         when(assetRepo.findAll()).thenReturn(testAssets);
