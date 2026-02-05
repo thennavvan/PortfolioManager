@@ -304,7 +304,7 @@ const WhatIfSimulator = () => {
             </div>
 
             <button className="add-change-btn" onClick={handleAddChange}>
-              + Add to Simulation
+              Add to Simulation
             </button>
           </div>
 
@@ -359,7 +359,12 @@ const WhatIfSimulator = () => {
           
           {!results ? (
             <div className="no-results">
-              <div className="no-results-icon">📊</div>
+              <div className="no-results-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M3 3v18h18" />
+                  <path d="M7 16l4-4 4 4 5-6" />
+                </svg>
+              </div>
               <p>Add changes and run simulation to see the impact</p>
             </div>
           ) : (
@@ -429,7 +434,7 @@ const WhatIfSimulator = () => {
                       <span className="value">{results.simulated.topHoldingPercent}%</span>
                     </div>
                     <div className={`change-indicator ${results.simulated.topHoldingPercent <= results.current.topHoldingPercent ? 'positive' : 'negative'}`}>
-                      {results.simulated.topHoldingPercent > 30 ? '⚠️ High concentration' : '✓ Good'}
+                      {results.simulated.topHoldingPercent > 30 ? 'High concentration' : 'Diversified'}
                     </div>
                   </div>
                 </div>
