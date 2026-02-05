@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getAssetBySymbol, getLivePrice } from '../services/api';
+import { getAssetBySymbol, getAssetInfo } from '../services/api';
 import '../styles/AddAssetForm.css';
 
 const AddAssetForm = ({ onSubmit, editingAsset, onCancel }) => {
@@ -15,6 +15,7 @@ const AddAssetForm = ({ onSubmit, editingAsset, onCancel }) => {
   const [checkingSymbol, setCheckingSymbol] = useState(false);
   const [validatingTicker, setValidatingTicker] = useState(false);
   const [symbolValidation, setSymbolValidation] = useState(null);
+  const [assetName, setAssetName] = useState('');
 
   // If editing, populate the form
   useEffect(() => {
@@ -56,13 +57,15 @@ const AddAssetForm = ({ onSubmit, editingAsset, onCancel }) => {
       setCheckingSymbol(true);
       setValidatingTicker(true);
       setSymbolValidation(null);
+      setAssetName('');
 
-      // First, validate the ticker by checking if it returns a valid price
+      // Get asset info including type and price
       try {
-        const priceResponse = await getLivePrice(symbol);
+        const infoResponse = await getAssetInfo(symbol);
+        const assetInfo = infoResponse.data;
         
-        // Check if price is valid and not "N/A"
-        if (!priceResponse.data.price || priceResponse.data.price === 'N/A' || priceResponse.data.price === null) {
+        // Check if price is valid
+        if (!assetInfo.price || assetInfo.price === null) {
           setSymbolValidation({
             valid: false,
             message: `Invalid ticker symbol "${symbol}". Please check and try again.`
@@ -74,10 +77,19 @@ const AddAssetForm = ({ onSubmit, editingAsset, onCancel }) => {
           return;
         }
 
-        // If ticker is valid, check if it already exists in the portfolio
+        // Auto-select the asset type based on Yahoo Finance data
+        setFormData(prev => ({
+          ...prev,
+          assetType: assetInfo.assetType || 'STOCK'
+        }));
+        
+        // Store the asset name for display
+        setAssetName(assetInfo.name || '');
+
+        // Ticker is valid
         setSymbolValidation({
           valid: true,
-          message: `✓ Valid ticker - Current price: $${parseFloat(priceResponse.data.price).toFixed(2)}`
+          message: `✓ ${assetInfo.name} (${assetInfo.assetType}) - $${parseFloat(assetInfo.price).toFixed(2)}`
         });
         setErrors(prev => ({
           ...prev,
