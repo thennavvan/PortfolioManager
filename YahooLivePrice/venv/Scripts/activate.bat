@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=D:\App\JavaLearning\YahooLivePrice\venv
+set VIRTUAL_ENV=D:\Finsight Portfolio manager\PortfolioManager\YahooLivePrice\venv
 
 if not defined PROMPT set PROMPT=$P$G
 

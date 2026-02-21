@@ -35,7 +35,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="D:\App\JavaLearning\YahooLivePrice\venv"
+VIRTUAL_ENV="D:\Finsight Portfolio manager\PortfolioManager\YahooLivePrice\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

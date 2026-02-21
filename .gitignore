@@ -1,0 +1,43 @@
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# Node.js
+node_modules/
+npm-startup.log
+frontend/node_modules/
+
+# Python
+venv/
+.venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+YahooLivePrice/venv/
+YahooLivePrice/__pycache__/
+
+# Java (Maven)
+target/
+PortfolioManager/PortfolioManager/target/
+.mvn/
+PortfolioManager/PortfolioManager/.mvn/
+
+# Environment / Sensitive
+.env
+.env.local
+.env.*.local
+
+# Logs and OS
+*.log
+Thumbs.db
+.DS_Store
+ASSET_UPDATE_COMPLETE.txt
+FIX_INSTRUCTIONS.txt
+commands.txt
+concepts.txt
